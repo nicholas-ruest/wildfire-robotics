@@ -1,0 +1,30 @@
+# Ubiquitous Language
+
+- **Actuation envelope:** Signed limits on actuator, agent, rate, direction, location, time, and environmental conditions.
+- **Assignment:** Incident-command authorization to pursue an objective under constraints; not a low-level command.
+- **Capability:** A versioned behavior a vehicle has proven at a stated assurance level and ODD.
+- **Collaboration profile:** Versioned advisory evidence describing context-specific robot/cohort cooperation outcomes; never identity, trust, authority, or capability.
+- **Command intent:** Authenticated, expiring request for an aggregate or vehicle to perform a capability.
+- **Common operating picture:** Time- and provenance-aware operational projection; never an assertion that every source agrees.
+- **Deconfliction:** Prevention/resolution of spatial, temporal, resource, and airspace conflicts.
+- **Evidence bundle:** Immutable links among requirement, hazard, mitigation, artifact, test result, approval, and release.
+- **Hazard picture:** Normalized observations and derived hazard features with freshness and uncertainty.
+- **Lightning risk area:** Time-bounded calibrated estimate of holdover-ignition/search priority derived from identified authoritative inputs and a baseline/model release; not a claimed strike or ignition.
+- **Incident:** Governed operational response with authority, geography, time, personnel, objectives, and restrictions.
+- **Minimum-risk condition:** Vehicle-specific stable state entered when continued execution is unsafe or unauthorized.
+- **Mission:** Policy-validated plan that realizes one assignment using allocated capabilities and resources.
+- **Mission lease:** Exclusive, expiring authority for a controller to advance a mission/vehicle intent.
+- **Fleet cell:** Bounded, epoch-fenced operational partition of assets and coordination responsibility within the million-asset hierarchy.
+- **Medic pod:** Small autonomous recovery vehicle/pod that assesses, stabilizes, isolates, lifts/tows and transfers custody of disabled robots; never a human medical resource.
+- **Near miss:** Event that could have caused harm but did not; treated as safety evidence, not merely an error log.
+- **Observation:** Immutable source claim with event time, ingestion time, location, units, quality, license, and lineage.
+- **Operational design domain (ODD):** Conditions in which a capability is verified, including terrain, weather, visibility, connectivity, localization, proximity, and airspace.
+- **Operational envelope:** Intersection of incident authority, ODD, geofence, airspace, resource, environmental, and safety constraints.
+- **Operational period:** Incident-command timebox in which objectives and assignments are valid.
+- **Safe state:** Colloquial term; use the more precise vehicle-specific “minimum-risk condition.”
+- **Station:** Remote incident-edge base providing compute, communications, energy, inventory, maintenance, and synchronization.
+- **Robot hospital:** Regional fire-separated facility for damaged-robot quarantine, decontamination, diagnosis, repair, calibration, burn-in, recertification, salvage and retirement.
+- **Treatment prescription:** Approved, versioned definition of vegetation/fuel work, geometry, method/tool, desired residual state, exclusions, ODD, validity, and authority.
+- **Visual evidence:** Immutable calibrated image/video plus capture, pose, footprint, sensor, quality, provenance, classification and digest metadata; embeddings are rebuildable projections.
+- **Supervised autonomy:** Machine executes a bounded capability while a qualified human monitors and retains abort authority.
+- **Vehicle:** Managed cyber-physical asset. Drone, carrier, and firefighter are roles/capability profiles, not necessarily separate software platforms.
