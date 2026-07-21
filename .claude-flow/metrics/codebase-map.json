@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-07-21T12:12:15.379Z",
+  "projectRoot": "/workspaces/wildfire-robotics",
+  "structure": {
+    "hasPackageJson": false,
+    "hasTsConfig": false,
+    "hasClaudeConfig": true,
+    "hasClaudeFlow": true
+  },
+  "scannedAt": 1784635935379
+}

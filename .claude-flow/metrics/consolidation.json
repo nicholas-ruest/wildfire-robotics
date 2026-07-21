@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-07-21T12:18:16.090Z",
+  "distillationEnabled": true,
+  "patternsConsolidated": 6,
+  "memoryCleaned": 22,
+  "duplicatesRemoved": 16,
+  "episodes": 6,
+  "patternEmbeddings": 6,
+  "causalEdges": 3,
+  "promoted": 1,
+  "byProvenance": {
+    "proxy:structural": 5,
+    "oracle:test-exec": 1
+  },
+  "namespaces": [
+    "commands",
+    "session",
+    "feedback"
+  ],
+  "dryRun": false,
+  "corrupt": false
+}
