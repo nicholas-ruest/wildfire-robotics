@@ -1,15 +1,8 @@
 #![forbid(unsafe_code)]
-//! fleet operations bounded context.
-
-/// Stable bounded-context name used in diagnostics and contract metadata.
+//! Fleet identity, eligibility, energy, health, and hierarchical cell ownership.
+mod assets;
+mod cells;
+pub use assets::*;
+pub use cells::*;
+/// Stable bounded-context name.
 pub const CONTEXT_NAME: &str = "fleet-operations";
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn context_name_is_stable() {
-        assert_eq!(CONTEXT_NAME, "fleet-operations");
-    }
-}

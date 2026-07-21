@@ -1,0 +1,15 @@
+{
+  "prompt": 10,
+  "workload": "streaming deterministic identity generation and point-addressed placement indexing",
+  "seed": 24301,
+  "profile": "criterion release, sample-size 10",
+  "results": [
+    {"identities": 10000, "mean_milliseconds": 1.0233, "confidence_interval_milliseconds": [1.0132, 1.0314]},
+    {"identities": 1000000, "mean_milliseconds": 278.25, "confidence_interval_milliseconds": [274.83, 281.80]}
+  ],
+  "declared_thresholds": [
+    {"identities": 10000, "maximum_mean_milliseconds": 5},
+    {"identities": 1000000, "maximum_mean_milliseconds": 1000}
+  ],
+  "limitations": "This isolates deterministic generation and in-memory placement-index construction. Database, broker, connected-subset traffic, and infrastructure cost qualification remain environment-specific production-readiness evidence."
+}
