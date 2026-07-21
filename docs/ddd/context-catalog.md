@@ -18,6 +18,7 @@
 | Commercial Operations | Tenant, Contract, Entitlement, Meter, SupportCase | OnboardTenant, ChangeEntitlement, RecordUsage | TenantActivated, UsageRated, SupportEscalated |
 | Vegetation Management | TreatmentProgram, Prescription, TreatmentUnit, WorkPackage, EffectivenessAssessment | CreatePrescription, AuthorizeWork, DispatchTreatment, RecordTreatment, AssessEffectiveness | PrescriptionApproved, TreatmentCompleted, EffectivenessAssessed |
 | Robot Care and Recovery | ServicePolicy, MaintenancePlan, WorkOrder, RecoveryMission, DamageAssessment, QuarantineCase, RepairCase, RetirementCase | ScheduleMaintenance, RequestRecovery, StabilizeRobot, RepairRobot, RecertifyRobot, RetireRobot | MaintenanceCompleted, RobotRecovered, RobotQuarantined, RobotRecertified, RobotRetired |
+| Aerial Deployment Operations | BlanketConfiguration, MembraneAssembly, PayloadManifest, AerialDropMission, ReleaseAuthorization, AirborneDeployment, GroundInstallation | PromoteConfiguration, PlanDropMission, ApproveLoad, ArmRelease, CommitRelease, IsolatePanel, ActivateBlanket, RecoverPanel | BlanketConfigurationPromoted, PayloadLoadApproved, PayloadReleased, DeploymentPhaseChanged, BlanketActivated, BlanketRecovered |
 
 Detailed aggregates must enforce invariants in code and tests. This catalog is a planning contract, not a substitute for implementation.
 

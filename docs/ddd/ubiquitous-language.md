@@ -1,6 +1,7 @@
 # Ubiquitous Language
 
 - **Actuation envelope:** Signed limits on actuator, agent, rate, direction, location, time, and environmental conditions.
+- **Aerial fire blanket:** Experimental modular membrane/robot system deployed ahead of predicted ignition or fire spread for temporary ember/radiant-heat shielding and containment support; never a fireproof cover for a developed crown fire.
 - **Assignment:** Incident-command authorization to pursue an objective under constraints; not a low-level command.
 - **Capability:** A versioned behavior a vehicle has proven at a stated assurance level and ODD.
 - **Collaboration profile:** Versioned advisory evidence describing context-specific robot/cohort cooperation outcomes; never identity, trust, authority, or capability.
@@ -14,6 +15,7 @@
 - **Minimum-risk condition:** Vehicle-specific stable state entered when continued execution is unsafe or unauthorized.
 - **Mission:** Policy-validated plan that realizes one assignment using allocated capabilities and resources.
 - **Mission lease:** Exclusive, expiring authority for a controller to advance a mission/vehicle intent.
+- **Release authorization:** Irreversible payload-release permission requiring matching current aircraft-authority and incident/safety decisions bound to one configuration, manifest, corridor, conditions and command digest.
 - **Fleet cell:** Bounded, epoch-fenced operational partition of assets and coordination responsibility within the million-asset hierarchy.
 - **Medic pod:** Small autonomous recovery vehicle/pod that assesses, stabilizes, isolates, lifts/tows and transfers custody of disabled robots; never a human medical resource.
 - **Near miss:** Event that could have caused harm but did not; treated as safety evidence, not merely an error log.

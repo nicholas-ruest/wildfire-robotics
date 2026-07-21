@@ -18,6 +18,7 @@
 | Commercial Operations | Supporting | Tenants, contracts, entitlements, metering, support, regional economics | Active safety authority |
 | Vegetation Management | Core | Preventive fuel-treatment prescriptions, treatment units, robot work, biomass disposition, effectiveness evidence | Active-fire suppression or incident authority |
 | Robot Care and Recovery | Supporting/Core-enabling | Maintenance policy/work, medic recovery, damage/quarantine, hospital repair/recertification and retirement | Fleet eligibility, habitat energy, incident rescue priority or supply ownership |
+| Aerial Deployment Operations | Core/R&D | Blanket configuration/assembly, payload manifest, release handshake, coupled airborne deployment, ground installation and component accounting | Aircraft flight/release veto, incident authority, suppression chemistry, vegetation work, fleet eligibility or repair disposition |
 
 ## Upstream/downstream relationships
 
@@ -32,6 +33,7 @@ External hazard providers
                   -> Suppression Operations <------------+
                   -> Vegetation Management -> Fleet Operations / Vehicle Integration
                   -> Robot Care and Recovery -> Fleet Operations / Station Operations / Logistics
+                  -> Aerial Deployment Operations -> Vehicle Integration / Suppression / Vegetation
 
 Identity and Access -> all command/administration boundaries
 Safety Assurance    -> constrains Incident Command, Mission Control, Vehicle Integration,
@@ -40,6 +42,7 @@ Station Operations  <-> Mission Control / Fleet Operations / Logistics (edge syn
 Commercial Operations <- operational usage events (never a command dependency)
 Vegetation Management <- hazard/fuel intelligence; publishes treated-fuel and effectiveness observations
 Robot Care and Recovery <- fleet/vehicle fault and exposure facts; publishes service, quarantine, recertification and retirement facts
+Aerial Deployment Operations <- incident/safety/aircraft authority and prediction; publishes release/deployment/installation/accounting facts
 ```
 
 ## Integration contracts
@@ -56,6 +59,10 @@ Robot Care and Recovery <- fleet/vehicle fault and exposure facts; publishes ser
 - **Mission Control ↔ Vegetation Management:** work packages become missions only after prescription, authority, tool, ODD, exclusion, and safety validation.
 - **Fleet Operations ↔ Robot Care:** Fleet publishes configuration/health/eligibility and consumes evidence-backed maintenance, recertification and retirement outcomes; Robot Care cannot directly make a robot operationally eligible.
 - **Station/Logistics ↔ Robot Care:** Station supplies maintenance/quarantine/hospital capacity; Logistics owns medic/repair transport custody, parts, consumables, salvage and hazardous disposition.
+- **Incident/Mission/Safety → Aerial Deployment:** incident objective, robot allocation/lease and promoted exact configuration/ODD constrain the mission; none is sufficient alone to release payload.
+- **Aircraft adapter ↔ Aerial Deployment:** aircraft authority owns loading/release veto and flight state; the context supplies a configuration/manifest/corridor handshake without commanding aircraft flight systems.
+- **Aerial Deployment → Suppression/Vegetation:** an installed blanket publishes bounded panel/footprint/health facts; suppressant and vegetation commands remain with their owning contexts.
+- **Aerial Deployment → Logistics/Robot Care:** serialized accounting and exposure/damage facts drive recovery, quarantine, repair, reuse, recycling or approved sacrificial disposition.
 
 ## Consistency boundaries
 

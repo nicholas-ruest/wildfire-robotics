@@ -6,13 +6,14 @@
 
 ## Automated checks performed
 
-- Sixty-eight sequential ADRs exist and are listed in the ADR index.
-- Fourteen bounded contexts are specified. Twelve map to existing Rust workspace crates; Vegetation Management and Robot Care and Recovery are deliberately specified before their authoritative crates are created.
+- Seventy-four sequential ADRs exist and are listed in the ADR index.
+- Fifteen bounded contexts are specified. Twelve map to existing Rust workspace crates; Vegetation Management, Robot Care and Recovery, and Aerial Deployment Operations are deliberately specified before their authoritative crates are created.
 - Every context specifies aggregate lifecycles, commands/events, owned values, numbered invariants, ports, read models, and failure policy under a common tactical standard.
 - Cross-context envelopes, delivery rules, published language, process managers, compensation, and traceability are governed explicitly.
 - Million-asset hierarchy, ruv-drone integration, aerial relay, authoritative lightning-plus-ML, RuPixel imagery retrieval, bounded RVM collaboration, closed-loop learning, supply-chain digital thread, ROI analytics, and vegetation robots are explicit governed requirements.
 - Distributed solar microgrid habitats, million-battery charging, standardized transport pods, hybrid-electric autonomous carriers, and 100,000-robot mobilization waves are explicit and governed by a parametric physical-scale model.
 - Autonomous habitat maintenance robots, small medic recovery pods, hazardous-damage quarantine, regional robot hospitals, recertification, salvage and retirement are explicit governed capabilities.
+- The experimental aerial fire blanket is governed as an aircraft-independent, modular, dual-authority, progressively deployed and fully accounted R&D capability with staged material/ground/airdrop/aircraft evidence gates.
 - Local ADR Markdown targets resolve.
 - No changed file contains whitespace errors (`git diff --check`).
 - No authored documentation/source file exceeds the repository’s 500-line limit.

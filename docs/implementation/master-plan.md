@@ -56,6 +56,7 @@ Each workstream owns code, tests, infrastructure, documentation, and operational
 13. Robot habitats and energy: site-specific solar microgrids, stationary storage, resilient generation, docks, million-battery identity/charging, thermal/fire safety and readiness forecasting.
 14. Mass mobility: standardized habitat/transport pods, hybrid-electric autonomous carriers, bounded platoons, intermodal transfers and 100,000-robot useful-arrival mobilization exercises.
 15. Robot care and recovery: autonomous maintenance robots at habitats, small medic/recovery pods, quarantine and decontamination, regional robot hospitals, repair/calibration/burn-in, recertification, salvage and retirement.
+16. Aerial fire blanket R&D: material/panel/tether/parafoil/cradle qualification, aircraft-independent payload interface, dual-authority release, coupled deployment simulation, staged ground/low-drop/subscale/aircraft tests, ground installation, temporary containment and full component recovery/accounting.
 
 ## Quality gates
 

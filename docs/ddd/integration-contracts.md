@@ -55,6 +55,12 @@ Subjects follow `wr.<environment>.<region>.<tenant>.<context>.<aggregate>.<event
 | Robot Care | `RobotQuarantined` | robot/battery, hazard classes, isolation requirements, location, monitoring/release authority | Fleet, Station, Logistics, Safety |
 | Robot Care | `RobotRecertified` | robot/configuration, repair/parts/calibration/burn-in evidence, approved capability limitations | Fleet, Safety |
 | Robot Care | `RobotRetired` | robot, depower/sanitization/trust-revocation/salvage/disposition evidence | Fleet, Identity, Logistics, Commercial |
+| Aerial Deployment | `BlanketConfigurationPromoted` | exact payload/material/panel/tether/parafoil/cradle/robot configuration, stage, ODD, evidence, expiry | Mission, Fleet, Logistics, Safety |
+| Aerial Deployment | `PayloadLoadApproved` | aircraft/configuration reference, reconciled manifest/digest, mass properties, loading/release envelope, approvers | Aircraft adapter, Mission, Safety |
+| Aerial Deployment | `PayloadReleased` | mission/release IDs, dual authorization digests, aircraft/payload configuration, release spacetime/conditions, predicted footprint | Incident, Mission, Safety, Logistics |
+| Aerial Deployment | `DeploymentPhaseChanged` | prior/current phase, cohort/panel scope, stability/tension/vent state, navigation/time quality, contingency margin | Mission, Vehicle, Safety |
+| Aerial Deployment | `BlanketActivated` | installed footprint/panels, gaps/omissions, sensor freshness, exposure envelope, temporary validity | Incident, Suppression, Vegetation, Hazard |
+| Aerial Deployment | `ComponentDispositionChanged` | serialized component, exposure/damage/contamination, custody, recover/reuse/repair/recycle/sacrifice disposition | Logistics, Robot Care, Safety |
 | Suppression Operations | `SuppressionStateChanged` | operation, envelope, state, agent/dose summary, reason | Mission, Safety, Incident |
 | Safety Assurance | `ConstraintPublished` | constraint set, scope, ODD, validity, signature, supersedes | all constrained contexts |
 | Safety Assurance | `PromotionChanged` | subject release/capability, stage, ODD, evidence, decision | deployment and fleet systems |

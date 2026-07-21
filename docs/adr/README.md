@@ -70,6 +70,12 @@
 | [ADR-066](ADR-066-hybrid-electric-autonomous-heavy-carrier.md) | Hybrid-electric autonomous heavy carrier | proposed |
 | [ADR-067](ADR-067-mass-mobilization-capacity-and-flow-control.md) | Mass mobilization capacity and flow control | proposed |
 | [ADR-068](ADR-068-robot-care-recovery-and-maintenance-network.md) | Robot care, recovery, and maintenance network | proposed |
+| [ADR-069](ADR-069-experimental-modular-aerial-fire-blanket-capability.md) | Experimental modular aerial fire blanket capability | proposed |
+| [ADR-070](ADR-070-aircraft-independent-payload-and-certified-release-envelope.md) | Aircraft-independent payload and certified release envelope | proposed |
+| [ADR-071](ADR-071-modular-membrane-thermal-aerodynamic-and-environmental-assurance.md) | Modular membrane thermal, aerodynamic, and environmental assurance | proposed |
+| [ADR-072](ADR-072-guided-parafoil-tether-and-progressive-deployment-control.md) | Guided parafoil, tether, and progressive deployment control | proposed |
+| [ADR-073](ADR-073-drop-zone-protection-release-authority-and-abort.md) | Drop-zone protection, release authority, and abort | proposed |
+| [ADR-074](ADR-074-blanket-ground-transition-active-containment-and-recovery.md) | Blanket ground transition, active containment, and recovery | proposed |
 
 Numbers are immutable. Superseded decisions remain in the repository and link to their replacements.
 
