@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
   "tools/architecture-check",
+  "tools/evidence-manifest",
   "crates/shared-kernel",
   "crates/hazard-intelligence",
   "crates/predictive-planning",
@@ -32,7 +33,18 @@ serde = { version = "1.0.219", features = ["derive"] }
 thiserror = "2.0.12"
 uuid = { version = "1.16.0", features = ["serde", "v4"] }
 proptest = "1.7.0"
-shared-kernel = { path = "crates/shared-kernel" }
+sha2 = "0.10.9"
+shared-kernel = { path = "crates/shared-kernel", version = "0.1.0" }
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+overflow-checks = true
+panic = "abort"
+strip = "symbols"
+
+[profile.test]
+debug = "line-tables-only"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

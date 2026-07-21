@@ -10,10 +10,11 @@ TypeScript is reserved for the future browser operator console and generated cli
 ## Developer verification
 
 ```bash
-cargo fmt --all -- --check
-cargo test --workspace
-cargo clippy --workspace --all-targets --all-features -- -D warnings
-cargo run -p architecture-check
+cargo quality
 ```
+
+The command uses the pinned tools in `tools/quality-tools.toml` and writes attributable logs,
+coverage, CycloneDX SBOMs, and a non-promotional provenance manifest under `target/evidence`.
+See [deterministic test conventions](docs/testing/README.md) for fixture and seed requirements.
 
 Architecture and production gates are documented in [docs/architecture](docs/architecture/README.md).

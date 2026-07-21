@@ -1,0 +1,13 @@
+[profile.default]
+fail-fast = false
+failure-output = "immediate-final"
+slow-timeout = { period = "30s", terminate-after = 2 }
+status-level = "pass"
+
+[profile.ci]
+fail-fast = false
+retries = 0
+test-threads = "num-cpus"
+success-output = "never"
+failure-output = "immediate-final"
+slow-timeout = { period = "30s", terminate-after = 2 }

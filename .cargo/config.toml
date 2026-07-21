@@ -1,0 +1,10 @@
+[alias]
+architecture = "run --locked -p architecture-check --"
+evidence = "run --locked -p evidence-manifest --"
+quality = "run --locked -p evidence-manifest -- verify"
+
+[build]
+incremental = false
+
+[env]
+RUST_BACKTRACE = "1"

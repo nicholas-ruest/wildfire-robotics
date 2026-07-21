@@ -1,0 +1,38 @@
+name: quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c
+        with:
+          toolchain: 1.97.1
+          components: clippy,rustfmt,llvm-tools-preview
+      - uses: taiki-e/install-action@13608cbb45b01feb47ef444ab1a42dc41ad56f1a # v2.79.11
+        with:
+          tool: cargo-nextest@0.9.140,cargo-deny@0.20.2,cargo-audit@0.22.2,cargo-llvm-cov@0.8.7,cargo-cyclonedx@0.5.9,gitleaks@8.28.0
+      - name: Install pinned non-Cargo scanners
+        run: |
+          pipx install semgrep==1.170.0
+      - name: Run reproducible quality gate
+        run: cargo quality
+      - name: Upload attributable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: quality-evidence
+          path: target/evidence
+          if-no-files-found: error
+          retention-days: 30

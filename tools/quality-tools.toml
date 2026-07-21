@@ -1,0 +1,12 @@
+schema_version = 1
+rust = "1.97.1"
+cargo_nextest = "0.9.140"
+cargo_deny = "0.20.2"
+cargo_audit = "0.22.2"
+cargo_llvm_cov = "0.8.7"
+cargo_cyclonedx = "0.5.9"
+gitleaks = "8.28.0"
+semgrep = "1.170.0"
+
+# Update versions only in a reviewed dependency-maintenance change. CI reads
+# this file and refuses accidental drift between installation and execution.

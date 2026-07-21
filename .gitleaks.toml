@@ -1,0 +1,8 @@
+title = "Wildfire Robotics secret scanning policy"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Vendored Ruflo plugin test fixtures and documentation; upstream-owned and non-deployable"
+paths = ['''^\.agents/skills/ruflo/''']

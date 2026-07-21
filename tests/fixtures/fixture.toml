@@ -1,0 +1,12 @@
+schema_version = 1
+fixture_id = "FIXTURE-CONVENTION-001"
+owner = "team-platform-assurance"
+source = "synthetic"
+license = "MIT"
+classification = "public"
+sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+created_by = "documented deterministic generator"
+seed = 6289646323763466821
+requirements = ["ADR-009", "ADR-046"]
+invariants = []
+synthetic = true

@@ -1,0 +1,14 @@
+rules:
+  - id: rust-process-command-shell
+    languages: [rust]
+    severity: ERROR
+    message: Shell command execution requires security review; invoke an executable directly.
+    patterns:
+      - pattern-either:
+          - pattern: std::process::Command::new("sh")
+          - pattern: std::process::Command::new("bash")
+  - id: rust-hardcoded-private-key
+    languages: [rust]
+    severity: ERROR
+    message: Private key material must never be embedded in source.
+    pattern-regex: '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----'
