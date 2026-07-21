@@ -3053,6 +3053,7 @@ dependencies = [
  "chrono",
  "proptest",
  "serde",
+ "sha2",
  "shared-kernel",
  "thiserror",
 ]

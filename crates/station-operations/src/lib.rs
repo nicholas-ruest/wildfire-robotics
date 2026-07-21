@@ -1,15 +1,8 @@
 #![forbid(unsafe_code)]
-//! station operations bounded context.
-
-/// Stable bounded-context name used in diagnostics and contract metadata.
+//! Portable station edge runtime, signed deployment supervision, and safe reconciliation.
+mod domain;
+mod supervisor;
+pub use domain::*;
+pub use supervisor::*;
+/// Stable bounded-context name.
 pub const CONTEXT_NAME: &str = "station-operations";
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn context_name_is_stable() {
-        assert_eq!(CONTEXT_NAME, "station-operations");
-    }
-}
