@@ -133,10 +133,56 @@ pub async fn record_inbox(
     business_key: Option<&str>,
     payload: &[u8],
 ) -> Result<bool, PersistenceError> {
+    Ok(matches!(
+        record_inbox_checked(
+            transaction,
+            tenant_id,
+            consumer,
+            message_id,
+            business_key,
+            payload
+        )
+        .await?,
+        InboxDisposition::Applied
+    ))
+}
+
+/// Result of claiming a consumer message/business idempotency key.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum InboxDisposition {
+    /// First observation; the caller may apply its business effect in this transaction.
+    Applied,
+    /// Byte-identical redelivery of an already committed message or business operation.
+    Duplicate,
+}
+
+/// Records inbox identity and rejects identity reuse with contradictory bytes.
+pub async fn record_inbox_checked(
+    transaction: &mut Transaction<'_, Postgres>,
+    tenant_id: Uuid,
+    consumer: &str,
+    message_id: Uuid,
+    business_key: Option<&str>,
+    payload: &[u8],
+) -> Result<InboxDisposition, PersistenceError> {
     let digest = format!("{:x}", Sha256::digest(payload));
     let result = sqlx::query("INSERT INTO wr_infra.inbox (tenant_id,consumer,message_id,business_key,payload_sha256) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING")
-        .bind(tenant_id).bind(consumer).bind(message_id).bind(business_key).bind(digest).execute(&mut **transaction).await?;
-    Ok(result.rows_affected() == 1)
+        .bind(tenant_id).bind(consumer).bind(message_id).bind(business_key).bind(&digest).execute(&mut **transaction).await?;
+    if result.rows_affected() == 1 {
+        return Ok(InboxDisposition::Applied);
+    }
+    let existing: Option<(Uuid, Option<String>, String)> = sqlx::query_as("SELECT message_id,business_key,payload_sha256 FROM wr_infra.inbox WHERE tenant_id=$1 AND consumer=$2 AND (message_id=$3 OR ($4::text IS NOT NULL AND business_key=$4)) FOR UPDATE")
+        .bind(tenant_id).bind(consumer).bind(message_id).bind(business_key).fetch_optional(&mut **transaction).await?;
+    match existing {
+        Some((stored_message, stored_key, stored_digest))
+            if stored_digest == digest
+                && (stored_message == message_id || stored_key.as_deref() == business_key) =>
+        {
+            Ok(InboxDisposition::Duplicate)
+        }
+        Some(_) => Err(PersistenceError::ContradictoryDuplicate),
+        None => Err(PersistenceError::InvalidStoredValue),
+    }
 }
 
 /// Outbox message exclusively claimed by one relay for a bounded interval.
@@ -146,16 +192,38 @@ pub struct ClaimedOutbox {
     pub tenant_id: Uuid,
     /// Stable event ID reused on every publication attempt.
     pub message_id: Uuid,
+    /// Owning aggregate type.
+    pub aggregate_type: String,
+    /// Aggregate identity used as the ordering key.
+    pub aggregate_id: Uuid,
+    /// Exact aggregate version.
+    pub aggregate_version: i64,
     /// Destination subject.
     pub subject: String,
     /// Content type.
     pub content_type: String,
+    /// ADR-028 classification.
+    pub classification: String,
     /// Encoded event.
     pub payload: Vec<u8>,
     /// Payload digest.
     pub payload_sha256: String,
     /// Number of claims including this one.
     pub attempts: i32,
+    /// Source event time.
+    pub occurred_at: DateTime<Utc>,
+}
+
+impl ClaimedOutbox {
+    /// Recomputes the payload digest before publication.
+    pub fn verify_payload(&self) -> Result<(), PersistenceError> {
+        let actual = format!("{:x}", Sha256::digest(&self.payload));
+        if actual == self.payload_sha256 {
+            Ok(())
+        } else {
+            Err(PersistenceError::PayloadDigestMismatch)
+        }
+    }
 }
 
 /// Claims ready messages with `SKIP LOCKED`; expired claims are restart-safe.
@@ -170,7 +238,7 @@ pub async fn claim_outbox(
     }
     let timeout_millis = claim_timeout.num_milliseconds();
     let limit = i64::from(limit);
-    sqlx::query_as::<_, ClaimedOutbox>("WITH candidates AS (SELECT tenant_id,message_id FROM wr_infra.outbox WHERE published_at IS NULL AND quarantined_at IS NULL AND available_at <= transaction_timestamp() AND (claimed_at IS NULL OR claimed_at < transaction_timestamp() - ($3 * interval '1 millisecond')) ORDER BY recorded_at FOR UPDATE SKIP LOCKED LIMIT $2) UPDATE wr_infra.outbox o SET claimed_by=$1,claimed_at=transaction_timestamp(),attempts=o.attempts+1 FROM candidates c WHERE o.tenant_id=c.tenant_id AND o.message_id=c.message_id RETURNING o.tenant_id,o.message_id,o.subject,o.content_type,o.payload,o.payload_sha256,o.attempts")
+    sqlx::query_as::<_, ClaimedOutbox>("WITH candidates AS (SELECT tenant_id,message_id FROM wr_infra.outbox WHERE published_at IS NULL AND quarantined_at IS NULL AND available_at <= transaction_timestamp() AND (claimed_at IS NULL OR claimed_at < transaction_timestamp() - ($3 * interval '1 millisecond')) ORDER BY recorded_at FOR UPDATE SKIP LOCKED LIMIT $2) UPDATE wr_infra.outbox o SET claimed_by=$1,claimed_at=transaction_timestamp(),attempts=o.attempts+1 FROM candidates c WHERE o.tenant_id=c.tenant_id AND o.message_id=c.message_id RETURNING o.tenant_id,o.message_id,o.aggregate_type,o.aggregate_id,o.aggregate_version,o.subject,o.content_type,o.classification,o.payload,o.payload_sha256,o.attempts,o.occurred_at")
         .bind(relay_id).bind(limit).bind(timeout_millis).fetch_all(pool).await.map_err(PersistenceError::Database)
 }
 
@@ -297,4 +365,10 @@ pub enum PersistenceError {
     /// Stored database value violated a schema invariant.
     #[error("stored persistence primitive violates its invariant")]
     InvalidStoredValue,
+    /// A message or business key was reused with different content.
+    #[error("message identity was reused with contradictory payload")]
+    ContradictoryDuplicate,
+    /// Durable outbox bytes no longer match their stored digest.
+    #[error("outbox payload digest mismatch")]
+    PayloadDigestMismatch,
 }

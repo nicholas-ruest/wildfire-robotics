@@ -1,0 +1,19 @@
+[package]
+name = "edge-reconciliation"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+description = "Generic safety-biased cloud-edge reconciliation scaffolding"
+
+[dependencies]
+serde.workspace = true
+shared-kernel.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
+[lints]
+workspace = true

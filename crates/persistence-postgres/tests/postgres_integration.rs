@@ -8,13 +8,51 @@ use testcontainers::{ContainerAsync, runners::AsyncRunner};
 use testcontainers_modules::postgres::Postgres;
 use uuid::Uuid;
 use wildfire_persistence_postgres::{
-    AggregateRecord, NewOutboxMessage, acquire_lease, begin_serializable, claim_outbox,
-    enqueue_outbox, fail_or_quarantine, mark_published, migrate, record_inbox, store_aggregate,
+    AggregateRecord, NewOutboxMessage, PersistenceError, acquire_lease, begin_serializable,
+    claim_outbox, enqueue_outbox, fail_or_quarantine, mark_published, migrate, record_inbox,
+    store_aggregate,
 };
 
 struct TestDatabase {
     pool: PgPool,
     _container: Option<ContainerAsync<Postgres>>,
+}
+
+#[tokio::test]
+async fn contradictory_duplicate_is_rejected() -> Result<(), Box<dyn std::error::Error>> {
+    let Some(database) = test_pool().await? else {
+        return Ok(());
+    };
+    let tenant = Uuid::new_v4();
+    let message = Uuid::new_v4();
+    let mut first = database.pool.begin().await?;
+    assert!(
+        record_inbox(
+            &mut first,
+            tenant,
+            "consumer",
+            message,
+            Some("operation"),
+            b"first"
+        )
+        .await?
+    );
+    first.commit().await?;
+    let mut replay = database.pool.begin().await?;
+    assert!(matches!(
+        record_inbox(
+            &mut replay,
+            tenant,
+            "consumer",
+            message,
+            Some("operation"),
+            b"changed"
+        )
+        .await,
+        Err(PersistenceError::ContradictoryDuplicate)
+    ));
+    replay.rollback().await?;
+    Ok(())
 }
 
 async fn test_pool() -> Result<Option<TestDatabase>, Box<dyn std::error::Error>> {

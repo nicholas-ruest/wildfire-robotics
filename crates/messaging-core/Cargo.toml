@@ -1,0 +1,29 @@
+[package]
+name = "messaging-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+description = "Broker-neutral authorized messaging, delivery, replay, and store-forward policies"
+
+[dependencies]
+chrono.workspace = true
+operations-core = { path = "../operations-core" }
+serde.workspace = true
+sha2.workspace = true
+shared-kernel.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+criterion = "0.5.1"
+edge-reconciliation = { path = "../edge-reconciliation" }
+proptest.workspace = true
+
+[lints]
+workspace = true
+
+[[bench]]
+name = "partition_reconnect"
+harness = false

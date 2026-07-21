@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "benchmark": "messaging-core/partition_reconnect",
+  "recorded_at": "2026-07-21T00:00:00Z",
+  "tool": "criterion 0.5.1",
+  "profile": "release",
+  "workload": {
+    "payload_bytes": 128,
+    "mix": {
+      "safety_critical_fraction": 0.1,
+      "operational_fraction_approx": 0.3,
+      "diagnostic_fraction_approx": 0.6
+    },
+    "behavior": "bounded offline enqueue followed by strict-priority reconnect drain",
+    "safety_loss_allowed": 0,
+    "duplicate_business_effects_allowed": 0
+  },
+  "regression_gates": {
+    "10000_max_mean_milliseconds": 1.0,
+    "100000_max_mean_milliseconds": 12.0,
+    "minimum_throughput_elements_per_second": 8000000
+  },
+  "observed": {
+    "10000": {
+      "mean_milliseconds": 0.44756,
+      "confidence_interval_milliseconds": [0.44433, 0.45121],
+      "throughput_elements_per_second": 22344000
+    },
+    "100000": {
+      "mean_milliseconds": 5.9115,
+      "confidence_interval_milliseconds": [5.8449, 5.9667],
+      "throughput_elements_per_second": 16916000
+    }
+  },
+  "result": "pass",
+  "limitations": [
+    "This microbenchmark measures the broker-neutral station queue and reconnect drain, not network or disk latency.",
+    "Pinned-NATS integration fault tests separately cover durable publish, redelivery, poison termination, partition and reconnect."
+  ]
+}

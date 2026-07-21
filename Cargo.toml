@@ -3,6 +3,9 @@ resolver = "3"
 members = [
   "crates/audit-ledger",
   "crates/operations-core",
+  "crates/messaging-core",
+  "crates/edge-reconciliation",
+  "crates/messaging-nats",
   "tools/architecture-check",
   "tools/contract-check",
   "tools/evidence-manifest",
