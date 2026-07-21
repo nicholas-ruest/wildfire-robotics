@@ -1,0 +1,22 @@
+/target/
+*.profraw
+*.lcov
+.env
+.env.*
+!.env.example
+
+# Claude Flow / Ruflo installed tooling and generated runtime state
+/.claude-flow/
+/.claude/
+/.agents/skills/ruflo/
+/.swarm/
+/CLAUDE.md
+/CLAUDE.md.pre-ruflo
+
+# Agent memory, indexes, locks, and local vector databases
+/agentdb.rvf
+/agentdb.rvf.lock
+/ruvector.db
+*.rvf.lock
+*.hnsw.index
+*.hnsw.metadata.json
