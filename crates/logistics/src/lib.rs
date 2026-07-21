@@ -4,11 +4,13 @@
 
 mod delivery;
 mod inventory;
+mod mobilization;
 mod supply;
 mod water;
 
 pub use delivery::*;
 pub use inventory::*;
+pub use mobilization::*;
 pub use supply::*;
 pub use water::*;
 
@@ -44,6 +46,12 @@ pub enum LogisticsError {
     InvalidSupplyPlan,
     #[error("no feasible supply plan satisfies hard dependencies")]
     InfeasibleSupply,
+    #[error("pod manifest violates load, securement, or isolation limits")]
+    UnsafeManifest,
+    #[error("carrier is unavailable, overloaded, or lacks recovery capacity")]
+    UnsafeCarrier,
+    #[error("mobilization capacity or downstream admission is unavailable")]
+    MobilizationCapacity,
     #[error("aggregate version exhausted")]
     VersionExhausted,
 }
