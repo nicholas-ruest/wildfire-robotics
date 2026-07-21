@@ -1,0 +1,155 @@
+schema_version = 1
+
+# This registry is authoritative for source, data, contract, deployable, and
+# operational ownership. Empty arrays are deliberate: later prompts add only
+# context-owned artifacts and must update this file in the same change.
+
+[[contexts]]
+name = "Hazard Intelligence"
+crate = "hazard-intelligence"
+schemas = ["hazard_intelligence"]
+migrations = ["migrations/hazard-intelligence"]
+deployables = ["hazard-intelligence-service"]
+owners = ["team-hazard-intelligence"]
+adrs = [6, 7, 18, 19, 29, 30]
+invariant_prefixes = ["HI-INV-"]
+
+[[contexts]]
+name = "Predictive Planning"
+crate = "predictive-planning"
+schemas = ["predictive_planning"]
+migrations = ["migrations/predictive-planning"]
+deployables = ["predictive-planning-service"]
+owners = ["team-predictive-planning"]
+adrs = [9, 31, 32, 45, 46, 56, 59]
+invariant_prefixes = ["PP-INV-"]
+
+[[contexts]]
+name = "Incident Command"
+crate = "incident-command"
+schemas = ["incident_command"]
+migrations = ["migrations/incident-command"]
+deployables = ["incident-command-service"]
+owners = ["team-incident-command"]
+adrs = [1, 2, 10, 23, 35, 43]
+invariant_prefixes = ["IC-INV-"]
+
+[[contexts]]
+name = "Mission Control"
+crate = "mission-control"
+schemas = ["mission_control"]
+migrations = ["migrations/mission-control"]
+deployables = ["mission-control-service"]
+owners = ["team-mission-control"]
+adrs = [1, 5, 12, 23, 43, 53, 55]
+invariant_prefixes = ["MC-INV-"]
+
+[[contexts]]
+name = "Fleet Operations"
+crate = "fleet-operations"
+schemas = ["fleet_operations"]
+migrations = ["migrations/fleet-operations"]
+deployables = ["fleet-operations-service"]
+owners = ["team-fleet-operations"]
+adrs = [12, 47, 53, 58, 64, 68]
+invariant_prefixes = ["FO-INV-"]
+
+[[contexts]]
+name = "Vehicle Integration"
+crate = "vehicle-integration"
+schemas = ["vehicle_integration"]
+migrations = ["migrations/vehicle-integration"]
+deployables = ["vehicle-gateway"]
+owners = ["team-vehicle-integration"]
+adrs = [3, 4, 8, 12, 23, 26, 27, 47]
+invariant_prefixes = ["VI-INV-"]
+
+[[contexts]]
+name = "Station Operations"
+crate = "station-operations"
+schemas = ["station_operations"]
+migrations = ["migrations/station-operations"]
+deployables = ["station-edge-core"]
+owners = ["team-station-operations"]
+adrs = [3, 13, 25, 33, 40, 42, 63, 64]
+invariant_prefixes = ["SO-INV-"]
+
+[[contexts]]
+name = "Logistics"
+crate = "logistics"
+schemas = ["logistics"]
+migrations = ["migrations/logistics"]
+deployables = ["logistics-service"]
+owners = ["team-logistics"]
+adrs = [6, 43, 53, 60, 65, 66, 67]
+invariant_prefixes = ["LO-INV-"]
+
+[[contexts]]
+name = "Suppression Operations"
+crate = "suppression-operations"
+schemas = ["suppression_operations"]
+migrations = ["migrations/suppression-operations"]
+deployables = ["suppression-operations-service"]
+owners = ["team-suppression-operations"]
+adrs = [1, 4, 8, 12, 23, 46, 47]
+invariant_prefixes = ["SU-INV-"]
+
+[[contexts]]
+name = "Safety Assurance"
+crate = "safety-assurance"
+schemas = ["safety_assurance"]
+migrations = ["migrations/safety-assurance"]
+deployables = ["safety-assurance-service"]
+owners = ["team-safety-assurance"]
+adrs = [1, 9, 12, 31, 45, 46, 52]
+invariant_prefixes = ["SA-INV-"]
+
+[[contexts]]
+name = "Identity and Access"
+crate = "identity-access"
+schemas = ["identity_access"]
+migrations = ["migrations/identity-access"]
+deployables = ["identity-access-service"]
+owners = ["team-identity-access"]
+adrs = [1, 10, 23, 34, 35, 37, 48]
+invariant_prefixes = ["IA-INV-"]
+
+[[contexts]]
+name = "Commercial Operations"
+crate = "commercial-operations"
+schemas = ["commercial_operations"]
+migrations = ["migrations/commercial-operations"]
+deployables = ["commercial-operations-service"]
+owners = ["team-commercial-operations"]
+adrs = [13, 15, 36, 44, 49, 50, 51, 61]
+invariant_prefixes = ["CO-INV-"]
+
+[[contexts]]
+name = "Vegetation Management"
+crate = "vegetation-management"
+schemas = ["vegetation_management"]
+migrations = ["migrations/vegetation-management"]
+deployables = ["vegetation-management-service"]
+owners = ["team-vegetation-management"]
+adrs = [1, 12, 43, 46, 53, 62]
+invariant_prefixes = ["VM-INV-"]
+
+[[contexts]]
+name = "Robot Care and Recovery"
+crate = "robot-care-recovery"
+schemas = ["robot_care_recovery"]
+migrations = ["migrations/robot-care-recovery"]
+deployables = ["robot-care-service"]
+owners = ["team-robot-care"]
+adrs = [47, 60, 64, 68]
+invariant_prefixes = ["RC-INV-"]
+
+[[contexts]]
+name = "Aerial Deployment Operations"
+crate = "aerial-deployment-operations"
+schemas = ["aerial_deployment_operations"]
+migrations = ["migrations/aerial-deployment-operations"]
+deployables = ["aerial-deployment-service"]
+owners = ["team-aerial-deployment"]
+adrs = [69, 70, 71, 72, 73, 74]
+invariant_prefixes = ["AD-INV-"]

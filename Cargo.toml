@@ -1,0 +1,48 @@
+[workspace]
+resolver = "3"
+members = [
+  "tools/architecture-check",
+  "crates/shared-kernel",
+  "crates/hazard-intelligence",
+  "crates/predictive-planning",
+  "crates/incident-command",
+  "crates/mission-control",
+  "crates/fleet-operations",
+  "crates/vehicle-integration",
+  "crates/station-operations",
+  "crates/logistics",
+  "crates/suppression-operations",
+  "crates/safety-assurance",
+  "crates/identity-access",
+  "crates/commercial-operations",
+  "crates/vegetation-management",
+  "crates/robot-care-recovery",
+  "crates/aerial-deployment-operations",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+rust-version = "1.97.1"
+
+[workspace.dependencies]
+chrono = { version = "0.4.41", default-features = false, features = ["clock", "serde", "std"] }
+serde = { version = "1.0.219", features = ["derive"] }
+thiserror = "2.0.12"
+uuid = { version = "1.16.0", features = ["serde", "v4"] }
+proptest = "1.7.0"
+shared-kernel = { path = "crates/shared-kernel" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+missing_errors_doc = "allow"

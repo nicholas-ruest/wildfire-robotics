@@ -1,0 +1,15 @@
+[package]
+name = "architecture-check"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+serde = { workspace = true }
+serde_json = "1.0.140"
+toml = "0.8.22"
+
+[lints]
+workspace = true
