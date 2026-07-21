@@ -1,0 +1,50 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "serialNumber": "urn:uuid:deed8152-b541-4260-ba1a-ca2088315b43",
+  "metadata": {
+    "timestamp": "2026-07-21T20:23:32.163717336Z",
+    "tools": [
+      {
+        "vendor": "CycloneDX",
+        "name": "cargo-cyclonedx",
+        "version": "0.5.9"
+      }
+    ],
+    "component": {
+      "type": "library",
+      "bom-ref": "path+file:///workspaces/wildfire-robotics/fixtures/persistence-service#persistence-migration-fixture@0.1.0",
+      "name": "persistence-migration-fixture",
+      "version": "0.1.0",
+      "scope": "required",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "purl": "pkg:cargo/persistence-migration-fixture@0.1.0?download_url=file://.",
+      "components": [
+        {
+          "type": "library",
+          "bom-ref": "path+file:///workspaces/wildfire-robotics/fixtures/persistence-service#persistence-migration-fixture@0.1.0 bin-target-0",
+          "name": "persistence_migration_fixture",
+          "version": "0.1.0",
+          "purl": "pkg:cargo/persistence-migration-fixture@0.1.0?download_url=file://.#src/lib.rs"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "cdx:rustc:sbom:target:triple",
+        "value": "x86_64-unknown-linux-gnu"
+      }
+    ]
+  },
+  "components": [],
+  "dependencies": [
+    {
+      "ref": "path+file:///workspaces/wildfire-robotics/fixtures/persistence-service#persistence-migration-fixture@0.1.0"
+    }
+  ]
+}

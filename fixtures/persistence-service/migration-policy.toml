@@ -1,0 +1,36 @@
+context = "persistence-fixture"
+schema = "persistence_fixture"
+advisory_lock_key = 741004001
+lock_timeout_ms = 5000
+statement_timeout_ms = 60000
+compatibility_versions = 2
+
+[[migrations]]
+version = 1
+file = "fixtures/persistence-service/migrations/000001_expand_canonical_name.sql"
+phase = "expand"
+sha256 = "9246ac863f89666d35aa61d86bf617dac3fad58ec7bf1f682c2289e5b5da1255"
+
+[[migrations]]
+version = 2
+file = "fixtures/persistence-service/migrations/000002_backfill_canonical_name.sql"
+phase = "backfill"
+sha256 = "a3a21ba3a55ca10f8099afd99623503582248c62c9a1796f2a410a45236e7fd5"
+
+[[migrations]]
+version = 3
+file = "fixtures/persistence-service/migrations/000003_switch_canonical_reads.sql"
+phase = "switch"
+sha256 = "bc2da96f728fb0b7cccfddc164331ced0e1f047d0deae2a5e025cca82a220c16"
+
+[[migrations]]
+version = 4
+file = "fixtures/persistence-service/migrations/000004_contract_legacy_name.sql"
+phase = "contract"
+sha256 = "8f8b8748d5117a64b7d9bfa375817d260a25720611c9c23892dc3985a4efd634"
+
+[recovery]
+roll_forward_runbook = "fixtures/persistence-service/ROLL_FORWARD.md"
+restore_runbook = "fixtures/persistence-service/RESTORE.md"
+backup_evidence = "EVD-FIXTURE-BACKUP-001"
+retention_review = "APR-FIXTURE-RETENTION-001"

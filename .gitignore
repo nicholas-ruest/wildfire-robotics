@@ -1,4 +1,7 @@
 /target/
+**/target/
+/fixtures/**/Cargo.lock
+/tools/**/Cargo.lock
 *.profraw
 *.lcov
 node_modules/

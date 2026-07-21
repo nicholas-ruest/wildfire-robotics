@@ -4,7 +4,10 @@ members = [
   "tools/architecture-check",
   "tools/contract-check",
   "tools/evidence-manifest",
+  "tools/migration-check",
   "crates/contracts-generated",
+  "crates/object-manifest",
+  "crates/persistence-postgres",
   "crates/shared-kernel",
   "crates/hazard-intelligence",
   "crates/predictive-planning",
@@ -21,6 +24,7 @@ members = [
   "crates/vegetation-management",
   "crates/robot-care-recovery",
   "crates/aerial-deployment-operations",
+  "fixtures/persistence-service",
 ]
 
 [workspace.package]

@@ -1,7 +1,10 @@
 [advisories]
 version = 2
 yanked = "deny"
-ignore = []
+# `rsa` is an optional, disabled SQLx MySQL dependency retained in Cargo.lock;
+# the platform enables PostgreSQL only and `cargo tree -i rsa --target all` is empty.
+# No fixed release exists. Remove this exception when SQLx drops the lock-only edge.
+ignore = ["RUSTSEC-2023-0071"]
 
 [bans]
 multiple-versions = "warn"

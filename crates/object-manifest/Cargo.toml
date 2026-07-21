@@ -1,0 +1,17 @@
+[package]
+name = "object-manifest"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+description = "Tenant-isolated immutable object manifests and reconciliation primitives"
+
+[dependencies]
+chrono.workspace = true
+sha2.workspace = true
+shared-kernel.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true
