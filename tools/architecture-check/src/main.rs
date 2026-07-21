@@ -139,6 +139,7 @@ fn validate_context_dependencies(root: &Path, registry: &Registry, errors: &mut 
         "kube",
         "rosrust",
         "mavlink",
+        "wildfire-contracts-generated",
     ];
     for context in &registry.contexts {
         let manifest_path = root

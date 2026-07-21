@@ -1,0 +1,202 @@
+syntax = "proto3";
+
+package wildfire.v1;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+// Canonical transport primitives governed by ADR-021 and ADR-023.
+// Fields 100-199 are reserved in every message for compatible governance use;
+// removed field names and numbers must additionally be reserved in-place.
+
+message Scope {
+  string tenant_id = 1; // UUID; 36 ASCII characters.
+  optional string region_id = 2; // Opaque identifier; at most 128 UTF-8 bytes.
+  optional string incident_id = 3; // UUID; 36 ASCII characters.
+  optional string mission_id = 4; // UUID; 36 ASCII characters.
+  optional string vehicle_id = 5; // UUID; 36 ASCII characters.
+  reserved 100 to 199;
+}
+
+message ArtifactReference {
+  string artifact_id = 1;
+  string uri = 2; // At most 2048 UTF-8 bytes; allowed schemes are policy controlled.
+  string sha256 = 3; // Exactly 64 lowercase hexadecimal characters.
+  uint64 size_bytes = 4;
+  string media_type = 5; // At most 255 ASCII characters.
+  DataClassification classification = 6;
+  optional string license = 7;
+  optional google.protobuf.Timestamp expires_at = 8;
+  reserved 100 to 199;
+}
+
+enum DataClassification {
+  DATA_CLASSIFICATION_UNSPECIFIED = 0;
+  DATA_CLASSIFICATION_PUBLIC = 1;
+  DATA_CLASSIFICATION_INTERNAL = 2;
+  DATA_CLASSIFICATION_CONFIDENTIAL = 3;
+  DATA_CLASSIFICATION_RESTRICTED = 4;
+}
+
+enum ClockSource {
+  CLOCK_SOURCE_UNSPECIFIED = 0;
+  CLOCK_SOURCE_PTP = 1;
+  CLOCK_SOURCE_NTP = 2;
+  CLOCK_SOURCE_GNSS = 3;
+  CLOCK_SOURCE_HOLDOVER = 4;
+  CLOCK_SOURCE_UNKNOWN = 5;
+}
+
+message ClockQuality {
+  ClockSource source = 1;
+  sint64 offset_nanos = 2;
+  uint64 uncertainty_nanos = 3;
+  google.protobuf.Timestamp observed_at = 4;
+  reserved 100 to 199;
+}
+
+message AuthorityReference {
+  string grant_id = 1;
+  string principal_id = 2;
+  Scope scope = 3;
+  repeated string permissions = 4; // At most 64 entries of at most 128 bytes.
+  google.protobuf.Timestamp valid_from = 5;
+  google.protobuf.Timestamp valid_until = 6;
+  repeated string approver_ids = 7; // At most 16 UUIDs.
+  string policy_version = 8;
+  reserved 100 to 199;
+}
+
+message OddReference {
+  string odd_id = 1;
+  string version = 2;
+  string digest_sha256 = 3;
+  reserved 100 to 199;
+}
+
+message EvidenceReference {
+  string evidence_id = 1;
+  ArtifactReference artifact = 2;
+  optional google.protobuf.Timestamp valid_until = 3;
+  reserved 100 to 199;
+}
+
+message SafetyContext {
+  AuthorityReference authority = 1;
+  OddReference odd = 2;
+  repeated string constraint_versions = 3; // At most 128 entries.
+  repeated EvidenceReference evidence = 4; // At most 128 entries.
+  ClockQuality clock_quality = 5;
+  reserved 100 to 199;
+}
+
+message CommandEnvelope {
+  string command_id = 1;
+  string command_type = 2;
+  string schema_version = 3;
+  string idempotency_key = 4; // 1-128 bytes, unique within issuer scope.
+  string issuer_principal_id = 5;
+  repeated string approver_principal_ids = 6; // At most 16 UUIDs.
+  Scope scope = 7;
+  google.protobuf.Timestamp issued_at = 8;
+  google.protobuf.Timestamp expires_at = 9;
+  uint64 expected_aggregate_version = 10;
+  string capability = 11;
+  string payload_schema_version = 12;
+  SafetyContext safety = 13;
+  string correlation_id = 14;
+  optional string causation_id = 15;
+  string payload_sha256 = 16;
+  google.protobuf.Any payload = 17; // Unpacked payload is bounded to 1 MiB.
+  bytes detached_signature = 18; // At most 16 KiB.
+  string signing_key_id = 19;
+  reserved 100 to 199;
+}
+
+message EventEnvelope {
+  string message_id = 1;
+  string event_type = 2;
+  string schema_version = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+  google.protobuf.Timestamp recorded_at = 5;
+  string producer = 6;
+  string producer_version = 7;
+  string aggregate_type = 8;
+  string aggregate_id = 9;
+  uint64 aggregate_version = 10;
+  Scope scope = 11;
+  string correlation_id = 12;
+  optional string causation_id = 13;
+  optional string trace_context = 14; // W3C traceparent plus tracestate; at most 1024 bytes.
+  DataClassification classification = 15;
+  string subject = 16;
+  string content_type = 17;
+  string payload_sha256 = 18;
+  google.protobuf.Any payload = 19; // Unpacked payload is bounded to 1 MiB.
+  optional SafetyContext safety = 20;
+  reserved 100 to 199;
+}
+
+enum ErrorCategory {
+  ERROR_CATEGORY_UNSPECIFIED = 0;
+  ERROR_CATEGORY_INVALID_ARGUMENT = 1;
+  ERROR_CATEGORY_UNAUTHENTICATED = 2;
+  ERROR_CATEGORY_FORBIDDEN = 3;
+  ERROR_CATEGORY_STALE_AUTHORITY = 4;
+  ERROR_CATEGORY_CONFLICT = 5;
+  ERROR_CATEGORY_FAILED_PRECONDITION = 6;
+  ERROR_CATEGORY_RESOURCE_EXHAUSTED = 7;
+  ERROR_CATEGORY_DEPENDENCY_UNAVAILABLE = 8;
+  ERROR_CATEGORY_INTERNAL = 9;
+}
+
+enum RetryClassification {
+  RETRY_CLASSIFICATION_UNSPECIFIED = 0;
+  RETRY_CLASSIFICATION_NEVER = 1;
+  RETRY_CLASSIFICATION_REREAD = 2;
+  RETRY_CLASSIFICATION_AFTER_CHANGE = 3;
+  RETRY_CLASSIFICATION_BACKOFF = 4;
+  RETRY_CLASSIFICATION_BOUNDED = 5;
+  RETRY_CLASSIFICATION_CONTROLLED = 6;
+}
+
+message ErrorDetail {
+  ErrorCategory category = 1;
+  string code = 2; // Stable uppercase snake case; at most 64 bytes.
+  string message = 3; // Redacted, human-readable, at most 2048 bytes.
+  RetryClassification retry = 4;
+  optional google.protobuf.Duration retry_after = 5;
+  string correlation_id = 6;
+  map<string, string> metadata = 7; // At most 32 entries; keys/values at most 128/512 bytes.
+  reserved 100 to 199;
+}
+
+message PageRequest {
+  uint32 page_size = 1; // Range 1-1000; server defaults when zero.
+  optional string page_token = 2; // Opaque, authenticated, at most 4096 bytes.
+  reserved 100 to 199;
+}
+
+message PageResponse {
+  optional string next_page_token = 1;
+  uint64 snapshot_version = 2;
+  google.protobuf.Timestamp snapshot_at = 3;
+  reserved 100 to 199;
+}
+
+enum ServingStatus {
+  SERVING_STATUS_UNSPECIFIED = 0;
+  SERVING_STATUS_SERVING = 1;
+  SERVING_STATUS_DEGRADED = 2;
+  SERVING_STATUS_NOT_SERVING = 3;
+}
+
+message HealthResponse {
+  ServingStatus status = 1;
+  string service = 2;
+  string version = 3;
+  google.protobuf.Timestamp observed_at = 4;
+  map<string, ServingStatus> dependencies = 5; // At most 64 entries.
+  reserved 100 to 199;
+}

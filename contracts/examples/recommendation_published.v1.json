@@ -1,0 +1,12 @@
+{
+  "aggregateVersion": 1,
+  "classification": "INTERNAL",
+  "contentType": "application/protobuf",
+  "eventType": "RecommendationPublished",
+  "messageId": "fixture-RecommendationPublished",
+  "payloadSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "payloadTypeUrl": "type.googleapis.com/wildfire.v1.RecommendationPublished",
+  "producer": "predictive-planning",
+  "schemaVersion": "1.0.0",
+  "subject": "wr.fixture.ca-central-1.fixture.predictive-planning.event.recommendationpublished.v1"
+}

@@ -2,7 +2,9 @@
 resolver = "3"
 members = [
   "tools/architecture-check",
+  "tools/contract-check",
   "tools/evidence-manifest",
+  "crates/contracts-generated",
   "crates/shared-kernel",
   "crates/hazard-intelligence",
   "crates/predictive-planning",

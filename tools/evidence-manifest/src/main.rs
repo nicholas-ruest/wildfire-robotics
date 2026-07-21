@@ -56,6 +56,7 @@ const STEPS: &[(&str, &[&str])] = &[
         "architecture",
         &["cargo", "run", "--locked", "-p", "architecture-check", "--"],
     ),
+    ("contracts", &["bash", "contracts/generate.sh", "--check"]),
     ("licenses", &["cargo", "deny", "check"]),
     ("advisories", &["cargo", "audit", "--deny", "warnings"]),
     (

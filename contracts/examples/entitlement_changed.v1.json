@@ -1,0 +1,12 @@
+{
+  "aggregateVersion": 1,
+  "classification": "CONFIDENTIAL",
+  "contentType": "application/protobuf",
+  "eventType": "EntitlementChanged",
+  "messageId": "fixture-EntitlementChanged",
+  "payloadSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "payloadTypeUrl": "type.googleapis.com/wildfire.v1.EntitlementChanged",
+  "producer": "commercial-operations",
+  "schemaVersion": "1.0.0",
+  "subject": "wr.fixture.ca-central-1.fixture.commercial-operations.event.entitlementchanged.v1"
+}

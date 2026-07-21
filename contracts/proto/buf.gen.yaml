@@ -1,0 +1,9 @@
+version: v2
+clean: true
+plugins:
+  - remote: buf.build/protocolbuffers/rust
+    out: ../../generated/rust
+  - remote: buf.build/bufbuild/es
+    out: ../../generated/typescript
+    opt:
+      - target=ts

@@ -1,0 +1,19 @@
+{
+  "name": "@wildfire-robotics/contracts-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "files": ["dist"],
+  "dependencies": {
+    "@bufbuild/protobuf": "2.9.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/conformance.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "24.3.0",
+    "@bufbuild/protoc-gen-es": "2.9.0",
+    "typescript": "5.9.2"
+  }
+}

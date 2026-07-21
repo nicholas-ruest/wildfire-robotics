@@ -1,0 +1,592 @@
+schema_version = 1
+
+# Normative inventory: docs/ddd/integration-contracts.md, "Published-language registry".
+# Paths are stable contract-workspace locations populated alongside each schema.
+
+[[contracts]]
+name = "DeviceTrustChanged"
+kind = "event"
+owner = "identity-access"
+version = "1.0.0"
+example = "contracts/examples/device_trust_changed.v1.json"
+fixture = "contracts/fixtures/device_trust_changed.v1.binpb"
+authorized_consumers = ["fleet-operations", "vehicle-integration", "station-operations", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; apply only newer aggregate_version"
+failure_policy = "bounded retry with jitter; quarantine invalid signature, scope, or ordering gap"
+
+[[contracts]]
+name = "AuthorityGrantChanged"
+kind = "event"
+owner = "identity-access"
+version = "1.0.0"
+example = "contracts/examples/authority_grant_changed.v1.json"
+fixture = "contracts/fixtures/authority_grant_changed.v1.binpb"
+authorized_consumers = ["incident-command", "mission-control", "fleet-operations", "vehicle-integration", "station-operations", "logistics", "suppression-operations", "vegetation-management", "robot-care-recovery", "aerial-deployment-operations", "safety-assurance", "commercial-operations"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; rebuild effective grants by aggregate_version"
+failure_policy = "fail closed on stale or missing authority; bounded retry then quarantine"
+
+[[contracts]]
+name = "ObservationAccepted"
+kind = "event"
+owner = "hazard-intelligence"
+version = "1.0.0"
+example = "contracts/examples/observation_accepted.v1.json"
+fixture = "contracts/fixtures/observation_accepted.v1.binpb"
+authorized_consumers = ["predictive-planning", "authorized-read-models"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; immutable observations may be replayed in source order"
+failure_policy = "bounded retry; quarantine invalid provenance, license, units, or digest"
+
+[[contracts]]
+name = "HazardPictureUpdated"
+kind = "event"
+owner = "hazard-intelligence"
+version = "1.0.0"
+example = "contracts/examples/hazard_picture_updated.v1.json"
+fixture = "contracts/fixtures/hazard_picture_updated.v1.binpb"
+authorized_consumers = ["predictive-planning", "incident-command"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; retain newest aggregate_version while preserving history"
+failure_policy = "bounded retry; quarantine digest or lineage mismatch; expose stale projection"
+
+[[contracts]]
+name = "VisualEvidenceIndexed"
+kind = "event"
+owner = "hazard-intelligence"
+version = "1.0.0"
+example = "contracts/examples/visual_evidence_indexed.v1.json"
+fixture = "contracts/fixtures/visual_evidence_indexed.v1.binpb"
+authorized_consumers = ["predictive-planning", "vegetation-management", "authorized-search"]
+classification = "CONFIDENTIAL"
+replay_policy = "deduplicate by message_id; indexes are rebuildable from immutable media manifests"
+failure_policy = "bounded retry; quarantine unlicensed, unscoped, or digest-mismatched media"
+
+[[contracts]]
+name = "LightningRiskAreaPublished"
+kind = "event"
+owner = "hazard-intelligence"
+version = "1.0.0"
+example = "contracts/examples/lightning_risk_area_published.v1.json"
+fixture = "contracts/fixtures/lightning_risk_area_published.v1.binpb"
+authorized_consumers = ["predictive-planning", "incident-command", "mission-control"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; preserve superseded products and enforce expiry"
+failure_policy = "bounded retry; reject missing lineage/calibration; stale products are non-authoritative"
+
+[[contracts]]
+name = "ForecastPublished"
+kind = "event"
+owner = "predictive-planning"
+version = "1.0.0"
+example = "contracts/examples/forecast_published.v1.json"
+fixture = "contracts/fixtures/forecast_published.v1.binpb"
+authorized_consumers = ["incident-command"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; preserve immutable run lineage and supersession"
+failure_policy = "bounded retry; quarantine invalid digest/lineage; expired forecast is unusable"
+
+[[contracts]]
+name = "RecommendationPublished"
+kind = "event"
+owner = "predictive-planning"
+version = "1.0.0"
+example = "contracts/examples/recommendation_published.v1.json"
+fixture = "contracts/fixtures/recommendation_published.v1.binpb"
+authorized_consumers = ["incident-command"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; preserve superseded advice and enforce expiry"
+failure_policy = "bounded retry; missing limitations/evidence quarantines advice; never creates authority"
+
+[[contracts]]
+name = "AssignmentIssued"
+kind = "event"
+owner = "incident-command"
+version = "1.0.0"
+example = "contracts/examples/assignment_issued.v1.json"
+fixture = "contracts/fixtures/assignment_issued.v1.binpb"
+authorized_consumers = ["mission-control", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; apply aggregate versions in order; enforce validity interval"
+failure_policy = "fail closed on authority/signature/version failure; quarantine after bounded retry"
+
+[[contracts]]
+name = "RestrictionChanged"
+kind = "event"
+owner = "incident-command"
+version = "1.0.0"
+example = "contracts/examples/restriction_changed.v1.json"
+fixture = "contracts/fixtures/restriction_changed.v1.binpb"
+authorized_consumers = ["hazard-intelligence", "predictive-planning", "mission-control", "fleet-operations", "vehicle-integration", "station-operations", "logistics", "suppression-operations", "safety-assurance", "vegetation-management", "robot-care-recovery", "aerial-deployment-operations"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; replay all versions and retain stricter effective restriction"
+failure_policy = "fail closed; bounded retry; ordering gaps block authority expansion and require repair"
+
+[[contracts]]
+name = "MissionAuthorized"
+kind = "event"
+owner = "mission-control"
+version = "1.0.0"
+example = "contracts/examples/mission_authorized.v1.json"
+fixture = "contracts/fixtures/mission_authorized.v1.binpb"
+authorized_consumers = ["fleet-operations", "vehicle-integration", "logistics", "suppression-operations"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; apply aggregate versions in order; enforce mission validity"
+failure_policy = "fail closed on stale authority/ODD/constraints; bounded retry then quarantine"
+
+[[contracts]]
+name = "MissionStateChanged"
+kind = "event"
+owner = "mission-control"
+version = "1.0.0"
+example = "contracts/examples/mission_state_changed.v1.json"
+fixture = "contracts/fixtures/mission_state_changed.v1.binpb"
+authorized_consumers = ["incident-command", "fleet-operations", "safety-assurance", "authorized-read-models"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; rebuild state from contiguous aggregate versions"
+failure_policy = "bounded retry; quarantine illegal transition or version gap; expose unknown state"
+
+[[contracts]]
+name = "CapabilityAttested"
+kind = "event"
+owner = "fleet-operations"
+version = "1.0.0"
+example = "contracts/examples/capability_attested.v1.json"
+fixture = "contracts/fixtures/capability_attested.v1.binpb"
+authorized_consumers = ["mission-control"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; rebuild capability history and enforce expiry"
+failure_policy = "bounded retry; invalid evidence/configuration quarantines attestation and prevents allocation"
+
+[[contracts]]
+name = "VehicleGrounded"
+kind = "event"
+owner = "fleet-operations"
+version = "1.0.0"
+example = "contracts/examples/vehicle_grounded.v1.json"
+fixture = "contracts/fixtures/vehicle_grounded.v1.binpb"
+authorized_consumers = ["mission-control", "vehicle-integration", "station-operations", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; grounding remains until explicit newer clearance"
+failure_policy = "fail closed; bounded retry; consumers locally ground on ambiguity"
+
+[[contracts]]
+name = "FleetCellChanged"
+kind = "event"
+owner = "fleet-operations"
+version = "1.0.0"
+example = "contracts/examples/fleet_cell_changed.v1.json"
+fixture = "contracts/fixtures/fleet_cell_changed.v1.binpb"
+authorized_consumers = ["mission-control", "station-operations"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; apply only increasing fenced epoch and aggregate_version"
+failure_policy = "bounded retry; quarantine stale/split-brain epoch and use conventional allocation"
+
+[[contracts]]
+name = "CollaborationProfilePromoted"
+kind = "event"
+owner = "fleet-operations"
+version = "1.0.0"
+example = "contracts/examples/collaboration_profile_promoted.v1.json"
+fixture = "contracts/fixtures/collaboration_profile_promoted.v1.binpb"
+authorized_consumers = ["mission-control"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; preserve profile versions and enforce validity"
+failure_policy = "bounded retry; quarantine poisoned evidence; advisory profile never grants authority"
+
+[[contracts]]
+name = "BatteryEligibilityChanged"
+kind = "event"
+owner = "fleet-operations"
+version = "1.0.0"
+example = "contracts/examples/battery_eligibility_changed.v1.json"
+fixture = "contracts/fixtures/battery_eligibility_changed.v1.binpb"
+authorized_consumers = ["station-operations", "mission-control", "logistics"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; apply aggregate versions in order and enforce expiry"
+failure_policy = "bounded retry; stale/conflicting health reduces eligibility and may quarantine battery"
+
+[[contracts]]
+name = "RobotRecoveryRequested"
+kind = "event"
+owner = "fleet-operations"
+version = "1.0.0"
+example = "contracts/examples/robot_recovery_requested.v1.json"
+fixture = "contracts/fixtures/robot_recovery_requested.v1.binpb"
+authorized_consumers = ["robot-care-recovery", "station-operations", "logistics"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id and recovery business key; retain immutable request history"
+failure_policy = "bounded retry; ambiguous hazard/location escalates to operator without unsafe dispatch"
+
+[[contracts]]
+name = "IntentAcknowledged"
+kind = "event"
+owner = "vehicle-integration"
+version = "1.0.0"
+example = "contracts/examples/intent_acknowledged.v1.json"
+fixture = "contracts/fixtures/intent_acknowledged.v1.binpb"
+authorized_consumers = ["mission-control", "authorized-audit"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id and command_id; never reinterpret transport ack as outcome"
+failure_policy = "bounded retry; unknown acknowledgement remains explicit and triggers minimum-risk policy"
+
+[[contracts]]
+name = "TelemetryNormalized"
+kind = "event"
+owner = "vehicle-integration"
+version = "1.0.0"
+example = "contracts/examples/telemetry_normalized.v1.json"
+fixture = "contracts/fixtures/telemetry_normalized.v1.binpb"
+authorized_consumers = ["fleet-operations", "mission-control", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; order by vehicle sequence, retaining event and ingestion time"
+failure_policy = "bounded buffering/retry; mark gaps and invalid clock/quality rather than fabricate samples"
+
+[[contracts]]
+name = "StationAvailabilityChanged"
+kind = "event"
+owner = "station-operations"
+version = "1.0.0"
+example = "contracts/examples/station_availability_changed.v1.json"
+fixture = "contracts/fixtures/station_availability_changed.v1.binpb"
+authorized_consumers = ["mission-control", "fleet-operations", "logistics"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; apply aggregate versions in order and expose freshness"
+failure_policy = "bounded retry; stale availability is degraded and cannot authorize new capacity"
+
+[[contracts]]
+name = "ConnectivityMapUpdated"
+kind = "event"
+owner = "station-operations"
+version = "1.0.0"
+example = "contracts/examples/connectivity_map_updated.v1.json"
+fixture = "contracts/fixtures/connectivity_map_updated.v1.binpb"
+authorized_consumers = ["mission-control", "vehicle-integration"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; retain immutable source manifests and enforce validity"
+failure_policy = "bounded retry; invalid/stale maps trigger conservative connectivity assumptions"
+
+[[contracts]]
+name = "HabitatReadinessChanged"
+kind = "event"
+owner = "station-operations"
+version = "1.0.0"
+example = "contracts/examples/habitat_readiness_changed.v1.json"
+fixture = "contracts/fixtures/habitat_readiness_changed.v1.binpb"
+authorized_consumers = ["fleet-operations", "mission-control", "logistics"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; apply aggregate versions in order and expose freshness"
+failure_policy = "bounded retry; stale/unknown readiness blocks admission and deployment"
+
+[[contracts]]
+name = "ChargeSessionChanged"
+kind = "event"
+owner = "station-operations"
+version = "1.0.0"
+example = "contracts/examples/charge_session_changed.v1.json"
+fixture = "contracts/fixtures/charge_session_changed.v1.binpb"
+authorized_consumers = ["fleet-operations", "logistics", "commercial-operations"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; rebuild session from contiguous aggregate versions"
+failure_policy = "bounded retry; illegal transition or anomaly quarantines session and preserves BMS override"
+
+[[contracts]]
+name = "EnergyShortfallPredicted"
+kind = "event"
+owner = "station-operations"
+version = "1.0.0"
+example = "contracts/examples/energy_shortfall_predicted.v1.json"
+fixture = "contracts/fixtures/energy_shortfall_predicted.v1.binpb"
+authorized_consumers = ["fleet-operations", "mission-control", "logistics"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; preserve forecasts and enforce period/freshness"
+failure_policy = "bounded retry; stale prediction cannot consume protected emergency reserve"
+
+[[contracts]]
+name = "DeliveryStateChanged"
+kind = "event"
+owner = "logistics"
+version = "1.0.0"
+example = "contracts/examples/delivery_state_changed.v1.json"
+fixture = "contracts/fixtures/delivery_state_changed.v1.binpb"
+authorized_consumers = ["mission-control", "incident-command", "commercial-operations"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id and delivery business key; rebuild custody state in order"
+failure_policy = "bounded retry; custody mismatch quarantines delivery and escalates to operator"
+
+[[contracts]]
+name = "SupplyShortagePredicted"
+kind = "event"
+owner = "logistics"
+version = "1.0.0"
+example = "contracts/examples/supply_shortage_predicted.v1.json"
+fixture = "contracts/fixtures/supply_shortage_predicted.v1.binpb"
+authorized_consumers = ["incident-command", "mission-control", "station-operations"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; preserve forecasts and enforce horizon/freshness"
+failure_policy = "bounded retry; stale prediction remains advisory and triggers replanning"
+
+[[contracts]]
+name = "PodCustodyChanged"
+kind = "event"
+owner = "logistics"
+version = "1.0.0"
+example = "contracts/examples/pod_custody_changed.v1.json"
+fixture = "contracts/fixtures/pod_custody_changed.v1.binpb"
+authorized_consumers = ["station-operations", "fleet-operations", "mission-control"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; apply contiguous custody transitions and verify manifest digest"
+failure_policy = "bounded retry; mismatch quarantines pod and blocks transfer"
+
+[[contracts]]
+name = "MobilizationWaveChanged"
+kind = "event"
+owner = "logistics"
+version = "1.0.0"
+example = "contracts/examples/mobilization_wave_changed.v1.json"
+fixture = "contracts/fixtures/mobilization_wave_changed.v1.binpb"
+authorized_consumers = ["incident-command", "mission-control", "fleet-operations", "station-operations"]
+classification = "INTERNAL"
+replay_policy = "deduplicate by message_id; rebuild wave from contiguous aggregate versions"
+failure_policy = "bounded retry; capacity/corridor inconsistency blocks release and triggers replanning"
+
+[[contracts]]
+name = "TreatmentCompleted"
+kind = "event"
+owner = "vegetation-management"
+version = "1.0.0"
+example = "contracts/examples/treatment_completed.v1.json"
+fixture = "contracts/fixtures/treatment_completed.v1.binpb"
+authorized_consumers = ["hazard-intelligence", "predictive-planning", "commercial-operations"]
+classification = "CONFIDENTIAL"
+replay_policy = "deduplicate by message_id; immutable completion facts may be replayed with superseding corrections"
+failure_policy = "bounded retry; missing geometry/evidence/digest quarantines completion"
+
+[[contracts]]
+name = "EffectivenessAssessed"
+kind = "event"
+owner = "vegetation-management"
+version = "1.0.0"
+example = "contracts/examples/effectiveness_assessed.v1.json"
+fixture = "contracts/fixtures/effectiveness_assessed.v1.binpb"
+authorized_consumers = ["hazard-intelligence", "predictive-planning", "commercial-operations"]
+classification = "CONFIDENTIAL"
+replay_policy = "deduplicate by message_id; retain assessment horizons and superseded evidence"
+failure_policy = "bounded retry; missing uncertainty or evidence quarantines assessment"
+
+[[contracts]]
+name = "MaintenanceCompleted"
+kind = "event"
+owner = "robot-care-recovery"
+version = "1.0.0"
+example = "contracts/examples/maintenance_completed.v1.json"
+fixture = "contracts/fixtures/maintenance_completed.v1.binpb"
+authorized_consumers = ["fleet-operations", "station-operations"]
+classification = "CONFIDENTIAL"
+replay_policy = "deduplicate by message_id; retain immutable service history by configuration"
+failure_policy = "bounded retry; missing test/evidence quarantines completion and does not restore eligibility"
+
+[[contracts]]
+name = "RobotRecovered"
+kind = "event"
+owner = "robot-care-recovery"
+version = "1.0.0"
+example = "contracts/examples/robot_recovered.v1.json"
+fixture = "contracts/fixtures/robot_recovered.v1.binpb"
+authorized_consumers = ["fleet-operations", "station-operations", "logistics", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id and recovery mission; apply custody transitions in order"
+failure_policy = "bounded retry; custody or hazard mismatch quarantines robot and escalates"
+
+[[contracts]]
+name = "RobotQuarantined"
+kind = "event"
+owner = "robot-care-recovery"
+version = "1.0.0"
+example = "contracts/examples/robot_quarantined.v1.json"
+fixture = "contracts/fixtures/robot_quarantined.v1.binpb"
+authorized_consumers = ["fleet-operations", "station-operations", "logistics", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; quarantine remains until explicit authorized newer clearance"
+failure_policy = "fail closed; bounded retry; ambiguity preserves isolation"
+
+[[contracts]]
+name = "RobotRecertified"
+kind = "event"
+owner = "robot-care-recovery"
+version = "1.0.0"
+example = "contracts/examples/robot_recertified.v1.json"
+fixture = "contracts/fixtures/robot_recertified.v1.binpb"
+authorized_consumers = ["fleet-operations", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; retain evidence by exact configuration and limitations"
+failure_policy = "bounded retry; invalid/missing evidence blocks fleet eligibility"
+
+[[contracts]]
+name = "RobotRetired"
+kind = "event"
+owner = "robot-care-recovery"
+version = "1.0.0"
+example = "contracts/examples/robot_retired.v1.json"
+fixture = "contracts/fixtures/robot_retired.v1.binpb"
+authorized_consumers = ["fleet-operations", "identity-access", "logistics", "commercial-operations"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; retirement is irreversible and all evidence is retained"
+failure_policy = "bounded retry; consumers fail closed and prevent reuse until reconciled"
+
+[[contracts]]
+name = "BlanketConfigurationPromoted"
+kind = "event"
+owner = "aerial-deployment-operations"
+version = "1.0.0"
+example = "contracts/examples/blanket_configuration_promoted.v1.json"
+fixture = "contracts/fixtures/blanket_configuration_promoted.v1.binpb"
+authorized_consumers = ["mission-control", "fleet-operations", "logistics", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; retain exact configuration/stage/ODD evidence and enforce expiry"
+failure_policy = "fail closed on mismatch or missing evidence; bounded retry then quarantine"
+
+[[contracts]]
+name = "PayloadLoadApproved"
+kind = "event"
+owner = "aerial-deployment-operations"
+version = "1.0.0"
+example = "contracts/examples/payload_load_approved.v1.json"
+fixture = "contracts/fixtures/payload_load_approved.v1.binpb"
+authorized_consumers = ["aircraft-adapter", "mission-control", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; bind approval to exact manifest/configuration and validity"
+failure_policy = "fail closed on digest/mass/envelope mismatch; bounded retry then operator escalation"
+
+[[contracts]]
+name = "PayloadReleased"
+kind = "event"
+owner = "aerial-deployment-operations"
+version = "1.0.0"
+example = "contracts/examples/payload_released.v1.json"
+fixture = "contracts/fixtures/payload_released.v1.binpb"
+authorized_consumers = ["incident-command", "mission-control", "safety-assurance", "logistics"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id and release_id; physical release fact is immutable"
+failure_policy = "bounded retry; preserve unknown delivery state and reconcile from aircraft evidence"
+
+[[contracts]]
+name = "DeploymentPhaseChanged"
+kind = "event"
+owner = "aerial-deployment-operations"
+version = "1.0.0"
+example = "contracts/examples/deployment_phase_changed.v1.json"
+fixture = "contracts/fixtures/deployment_phase_changed.v1.binpb"
+authorized_consumers = ["mission-control", "vehicle-integration", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; rebuild phase from contiguous aggregate versions"
+failure_policy = "bounded retry; illegal/gapped phase yields unknown state and contingency handling"
+
+[[contracts]]
+name = "BlanketActivated"
+kind = "event"
+owner = "aerial-deployment-operations"
+version = "1.0.0"
+example = "contracts/examples/blanket_activated.v1.json"
+fixture = "contracts/fixtures/blanket_activated.v1.binpb"
+authorized_consumers = ["incident-command", "suppression-operations", "vegetation-management", "hazard-intelligence"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; preserve installed footprint history and enforce temporary validity"
+failure_policy = "bounded retry; stale/gapped evidence cannot imply complete coverage"
+
+[[contracts]]
+name = "ComponentDispositionChanged"
+kind = "event"
+owner = "aerial-deployment-operations"
+version = "1.0.0"
+example = "contracts/examples/component_disposition_changed.v1.json"
+fixture = "contracts/fixtures/component_disposition_changed.v1.binpb"
+authorized_consumers = ["logistics", "robot-care-recovery", "safety-assurance"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id and serialized component; rebuild custody/disposition in order"
+failure_policy = "bounded retry; mismatch quarantines component and blocks reuse/disposal"
+
+[[contracts]]
+name = "SuppressionStateChanged"
+kind = "event"
+owner = "suppression-operations"
+version = "1.0.0"
+example = "contracts/examples/suppression_state_changed.v1.json"
+fixture = "contracts/fixtures/suppression_state_changed.v1.binpb"
+authorized_consumers = ["mission-control", "safety-assurance", "incident-command"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; rebuild operation state from contiguous aggregate versions"
+failure_policy = "fail safe on ambiguity; bounded retry; unknown state independently inhibits actuation"
+
+[[contracts]]
+name = "ConstraintPublished"
+kind = "event"
+owner = "safety-assurance"
+version = "1.0.0"
+example = "contracts/examples/constraint_published.v1.json"
+fixture = "contracts/fixtures/constraint_published.v1.binpb"
+authorized_consumers = ["incident-command", "mission-control", "fleet-operations", "vehicle-integration", "station-operations", "logistics", "suppression-operations", "vegetation-management", "robot-care-recovery", "aerial-deployment-operations"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; apply signed versions in order; retain equal-or-stricter constraint"
+failure_policy = "fail closed; cached unexpired constraints remain; gaps cannot expand authority"
+
+[[contracts]]
+name = "PromotionChanged"
+kind = "event"
+owner = "safety-assurance"
+version = "1.0.0"
+example = "contracts/examples/promotion_changed.v1.json"
+fixture = "contracts/fixtures/promotion_changed.v1.binpb"
+authorized_consumers = ["deployment-systems", "fleet-operations"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id; retain complete promotion/revocation history by exact subject"
+failure_policy = "fail closed on invalid signature/evidence/ODD; revocation or ambiguity blocks deployment"
+
+[[contracts]]
+name = "SafetyOccurrenceReported"
+kind = "event"
+owner = "safety-assurance"
+version = "1.0.0"
+example = "contracts/examples/safety_occurrence_reported.v1.json"
+fixture = "contracts/fixtures/safety_occurrence_reported.v1.binpb"
+authorized_consumers = ["incident-command", "security-operations"]
+classification = "RESTRICTED"
+replay_policy = "deduplicate by message_id and occurrence_id; occurrence facts are immutable"
+failure_policy = "bounded retry; preserve evidence and escalate delivery failure; never suppress occurrence"
+
+[[contracts]]
+name = "EntitlementChanged"
+kind = "event"
+owner = "commercial-operations"
+version = "1.0.0"
+example = "contracts/examples/entitlement_changed.v1.json"
+fixture = "contracts/fixtures/entitlement_changed.v1.binpb"
+authorized_consumers = ["api-admission", "work-admission"]
+classification = "CONFIDENTIAL"
+replay_policy = "deduplicate by message_id; rebuild effective entitlement by aggregate_version and interval"
+failure_policy = "bounded retry; deny optional admission on ambiguity; never interrupt active safety work"
+
+[[contracts]]
+name = "SupportEscalated"
+kind = "event"
+owner = "commercial-operations"
+version = "1.0.0"
+example = "contracts/examples/support_escalated.v1.json"
+fixture = "contracts/fixtures/support_escalated.v1.binpb"
+authorized_consumers = ["operations", "safety-assurance"]
+classification = "CONFIDENTIAL"
+replay_policy = "deduplicate by message_id and case_id; retain escalation history"
+failure_policy = "bounded retry; quarantine unsafe contact data and page owning operations path"
+
+[[contracts]]
+name = "InvestmentCasePublished"
+kind = "event"
+owner = "commercial-operations"
+version = "1.0.0"
+example = "contracts/examples/investment_case_published.v1.json"
+fixture = "contracts/fixtures/investment_case_published.v1.binpb"
+authorized_consumers = ["authorized-product-users", "authorized-portfolio-users"]
+classification = "CONFIDENTIAL"
+replay_policy = "deduplicate by message_id; preserve versioned assumptions, facts, and superseded cases"
+failure_policy = "bounded retry; missing fact manifest/assumptions quarantines publication"

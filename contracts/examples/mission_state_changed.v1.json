@@ -1,0 +1,12 @@
+{
+  "aggregateVersion": 1,
+  "classification": "RESTRICTED",
+  "contentType": "application/protobuf",
+  "eventType": "MissionStateChanged",
+  "messageId": "fixture-MissionStateChanged",
+  "payloadSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "payloadTypeUrl": "type.googleapis.com/wildfire.v1.MissionStateChanged",
+  "producer": "mission-control",
+  "schemaVersion": "1.0.0",
+  "subject": "wr.fixture.ca-central-1.fixture.mission-control.event.missionstatechanged.v1"
+}
