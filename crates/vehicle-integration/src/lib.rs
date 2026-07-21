@@ -1,15 +1,12 @@
 #![forbid(unsafe_code)]
-//! vehicle integration bounded context.
-
-/// Stable bounded-context name used in diagnostics and contract metadata.
+//! Stable vehicle gateway contracts, deterministic simulation, and normalized telemetry.
+mod domain;
+#[cfg(feature = "mavlink-adapter")]
+pub mod mavlink;
+#[cfg(feature = "ros2-adapter")]
+pub mod ros2;
+mod simulator;
+pub use domain::*;
+pub use simulator::*;
+/// Stable bounded-context name.
 pub const CONTEXT_NAME: &str = "vehicle-integration";
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn context_name_is_stable() {
-        assert_eq!(CONTEXT_NAME, "vehicle-integration");
-    }
-}

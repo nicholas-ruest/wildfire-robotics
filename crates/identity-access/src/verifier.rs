@@ -86,6 +86,59 @@ pub struct SignedCommandInput {
     pub break_glass: Option<BreakGlass>,
 }
 
+impl SignedCommandInput {
+    /// Deterministic unsigned representation binding every envelope field.
+    pub fn canonical_unsigned_bytes(&self) -> Result<Vec<u8>, VerificationError> {
+        let mut bytes = b"wildfire-command-envelope-v1\0".to_vec();
+        for value in [
+            &self.command_id,
+            &self.idempotency_key,
+            &self.issuer_principal_id,
+            &self.scope.tenant_id,
+            &self.capability,
+            &self.authority_fingerprint,
+            &self.signing_key_id,
+        ] {
+            push_text(&mut bytes, value)?;
+        }
+        for value in [
+            &self.scope.incident_id,
+            &self.scope.mission_id,
+            &self.scope.vehicle_id,
+        ] {
+            match value {
+                Some(value) => {
+                    bytes.push(1);
+                    push_text(&mut bytes, value)?;
+                }
+                None => bytes.push(0),
+            }
+        }
+        bytes.extend_from_slice(&self.issued_at.timestamp_micros().to_be_bytes());
+        bytes.extend_from_slice(&self.expires_at.timestamp_micros().to_be_bytes());
+        bytes.extend_from_slice(&self.expected_version.get().to_be_bytes());
+        bytes.extend_from_slice(self.payload_digest.as_bytes());
+        bytes.extend_from_slice(&self.policy_bundle_sequence.to_be_bytes());
+        match &self.break_glass {
+            Some(value) => {
+                bytes.push(1);
+                push_text(&mut bytes, &value.approver_principal_id)?;
+                push_text(&mut bytes, &value.reason)?;
+                bytes.extend_from_slice(&value.expires_at.timestamp_micros().to_be_bytes());
+            }
+            None => bytes.push(0),
+        }
+        Ok(bytes)
+    }
+}
+
+fn push_text(bytes: &mut Vec<u8>, value: &str) -> Result<(), VerificationError> {
+    let length = u32::try_from(value.len()).map_err(|_| VerificationError::MalformedEnvelope)?;
+    bytes.extend_from_slice(&length.to_be_bytes());
+    bytes.extend_from_slice(value.as_bytes());
+    Ok(())
+}
+
 impl SignedCommandEnvelope {
     /// Rejects incomplete or ambiguous envelope construction.
     pub fn new(input: SignedCommandInput) -> Result<Self, VerificationError> {
@@ -97,6 +150,7 @@ impl SignedCommandEnvelope {
             input.authority_fingerprint.as_str(),
             input.signing_key_id.as_str(),
         ];
+        let expected_canonical = input.canonical_unsigned_bytes()?;
         if required.iter().any(|value| value.trim().is_empty())
             || input.scope.tenant_id.trim().is_empty()
             || [
@@ -111,6 +165,7 @@ impl SignedCommandEnvelope {
             || input.policy_bundle_sequence == 0
             || input.canonical_bytes.is_empty()
             || input.signature.is_empty()
+            || input.canonical_bytes != expected_canonical
         {
             return Err(VerificationError::MalformedEnvelope);
         }
@@ -406,8 +461,8 @@ mod tests {
         })
     }
 
-    fn command() -> Result<SignedCommandEnvelope, VerificationError> {
-        SignedCommandEnvelope::new(SignedCommandInput {
+    fn command_input() -> Result<SignedCommandInput, VerificationError> {
+        let mut input = SignedCommandInput {
             command_id: "command-1".into(),
             idempotency_key: "effect-1".into(),
             issuer_principal_id: "issuer".into(),
@@ -425,10 +480,28 @@ mod tests {
             payload_digest: ContentDigest::from_sha256_bytes([3; 32]),
             policy_bundle_sequence: 7,
             signing_key_id: "command-key-2".into(),
-            canonical_bytes: vec![1, 2],
-            signature: vec![1, 2],
+            canonical_bytes: Vec::new(),
+            signature: Vec::new(),
             break_glass: None,
-        })
+        };
+        input.canonical_bytes = input.canonical_unsigned_bytes()?;
+        input.signature.clone_from(&input.canonical_bytes);
+        Ok(input)
+    }
+
+    fn command() -> Result<SignedCommandEnvelope, VerificationError> {
+        SignedCommandEnvelope::new(command_input()?)
+    }
+
+    #[test]
+    fn canonical_bytes_bind_every_command_field() -> Result<(), VerificationError> {
+        let mut input = command_input()?;
+        input.capability = "different-capability".into();
+        assert!(matches!(
+            SignedCommandEnvelope::new(input),
+            Err(VerificationError::MalformedEnvelope)
+        ));
+        Ok(())
     }
 
     #[test]
