@@ -1,6 +1,8 @@
 [workspace]
 resolver = "3"
 members = [
+  "crates/audit-ledger",
+  "crates/operations-core",
   "tools/architecture-check",
   "tools/contract-check",
   "tools/evidence-manifest",
