@@ -1,0 +1,15 @@
+error[E0308]: mismatched types
+ --> tests/ui/identifier_confusion.rs:7:20
+  |
+7 |     accept_mission(vehicle);
+  |     -------------- ^^^^^^^ expected `Identifier<Mission>`, found `Identifier<Vehicle>`
+  |     |
+  |     arguments to this function are incorrect
+  |
+  = note: expected struct `Identifier<Mission>`
+             found struct `Identifier<Vehicle>`
+note: function defined here
+ --> tests/ui/identifier_confusion.rs:3:4
+  |
+3 | fn accept_mission(_: MissionId) {}
+  |    ^^^^^^^^^^^^^^ ------------

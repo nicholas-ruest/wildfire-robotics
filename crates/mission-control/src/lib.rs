@@ -128,7 +128,9 @@ impl Mission {
         if self.state != MissionState::Authorized {
             return Err(MissionError::InvalidTransition);
         }
-        if !validity.contains(now) || validity.ends_at > self.assignment_validity.ends_at {
+        if !validity.contains(now)
+            || validity.ends_at().get() > self.assignment_validity.ends_at().get()
+        {
             return Err(MissionError::InvalidLeaseWindow);
         }
         if self

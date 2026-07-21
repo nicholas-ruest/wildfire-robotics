@@ -11,5 +11,10 @@ serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 
+[dev-dependencies]
+proptest.workspace = true
+serde_json.workspace = true
+trybuild.workspace = true
+
 [lints]
 workspace = true

@@ -1,0 +1,13 @@
+error[E0308]: mismatched types
+ --> tests/ui/scope_confusion.rs:8:21
+  |
+8 |     accept_incident(tenant);
+  |     --------------- ^^^^^^ expected `IncidentScope`, found `TenantScope`
+  |     |
+  |     arguments to this function are incorrect
+  |
+note: function defined here
+ --> tests/ui/scope_confusion.rs:3:4
+  |
+3 | fn accept_incident(_: IncidentScope) {}
+  |    ^^^^^^^^^^^^^^^ ----------------
