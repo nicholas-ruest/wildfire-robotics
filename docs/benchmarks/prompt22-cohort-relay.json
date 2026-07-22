@@ -1,0 +1,1 @@
+{"schema_version":1,"fixture":"prompt22-cohort-relay-v1","uavs":128,"max_cell":8,"iterations":1000,"valid_plans":1000,"total_microseconds":9946,"environment":"workspace release build; environment-dependent","relay_effective_quality_bps":8000,"scope":"Deterministic topology/relay qualification; not radio or flight performance evidence."}
