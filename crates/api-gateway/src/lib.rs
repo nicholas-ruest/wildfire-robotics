@@ -9,6 +9,8 @@ use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet};
 use thiserror::Error;
 
+pub mod http;
+
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum GatewayError {
     #[error("invalid request boundary value")]
@@ -138,6 +140,18 @@ impl AuthContext {
             roles,
             purpose: required(purpose)?,
         })
+    }
+    #[must_use]
+    pub fn principal(&self) -> &str {
+        &self.principal
+    }
+    #[must_use]
+    pub fn tenant(&self) -> &str {
+        &self.tenant
+    }
+    #[must_use]
+    pub fn region(&self) -> &str {
+        &self.region
     }
 }
 

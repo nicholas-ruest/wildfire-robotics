@@ -1,0 +1,21 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata: {name: wildfire-platform, namespace: flux-system}
+spec:
+  interval: 1m
+  ref: {branch: main}
+  secretRef: {name: wildfire-platform-readonly}
+  url: ssh://git@github.com/wildfire-robotics/wildfire-robotics
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata: {name: wildfire-production-ca, namespace: flux-system}
+spec:
+  interval: 5m
+  path: ./deploy/kubernetes/overlays/production-ca
+  prune: true
+  wait: true
+  timeout: 10m
+  sourceRef: {kind: GitRepository, name: wildfire-platform}
+  decryption: {provider: sops, secretRef: {name: sops-age}}
+  postBuild: {substitute: {PROMOTION_MODE: digest-only}}

@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: [../../base]
+namePrefix: prod-
+namespace: wildfire-production-ca
+patches:
+  - path: replicas.yaml
+  - path: namespace.yaml
+configMapGenerator:
+  - name: regional-placement
+    literals:
+      - WR_ENVIRONMENT=production
+      - WR_PRIMARY_REGION=ca-central-1
+      - WR_ALLOWED_REGIONS=ca-central-1,ca-west-1
+      - WR_DATA_RESIDENCY=CA
+      - WR_BACKUP_RESIDENCY=CA
+generatorOptions: {disableNameSuffixHash: true}

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "residency": "approved Canadian regions only",
+  "products": [
+    { "id": "context-postgresql-postgis", "owner": "context service owners", "classification": "protected operational", "method": "encrypted base backups plus continuous WAL", "frequency": "continuous WAL; daily base", "retention": "policy-defined immutable object lock", "isolation": "separate backup account and credentials", "rpo_seconds": 300, "rto_seconds": 3600, "restore_order": 4 },
+    { "id": "immutable-object-manifests", "owner": "platform data", "classification": "mixed; manifest scoped", "method": "versioning, content digests, replication and object lock", "frequency": "continuous", "retention": "classification and legal-hold policy", "isolation": "separate Canadian failure domain", "rpo_seconds": 300, "rto_seconds": 3600, "restore_order": 3 },
+    { "id": "nats-fact-streams", "owner": "messaging platform", "classification": "protected operational", "method": "encrypted stream snapshots and configuration export", "frequency": "every 5 minutes", "retention": "30 days immutable", "isolation": "separate Canadian backup credentials", "rpo_seconds": 300, "rto_seconds": 1800, "restore_order": 5 },
+    { "id": "audit-evidence", "owner": "safety and security assurance", "classification": "restricted immutable evidence", "method": "content-addressed locked copy", "frequency": "continuous", "retention": "approved evidence schedule and legal hold", "isolation": "separate account; deny delete to workloads", "rpo_seconds": 60, "rto_seconds": 1800, "restore_order": 3 },
+    { "id": "identity-policy-revocation", "owner": "identity and access", "classification": "restricted", "method": "encrypted configuration backup; HSM protected trust material", "frequency": "continuous configuration journal", "retention": "cryptographic inventory policy", "isolation": "independent security administration", "rpo_seconds": 60, "rto_seconds": 900, "restore_order": 2 },
+    { "id": "gitops-and-infrastructure-state", "owner": "platform engineering", "classification": "confidential", "method": "protected version control plus encrypted locked state snapshots", "frequency": "each accepted change", "retention": "release and infrastructure policy", "isolation": "separate recovery credentials", "rpo_seconds": 60, "rto_seconds": 1800, "restore_order": 1 }
+  ]
+}

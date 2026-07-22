@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wildfire-robotics.invalid/schemas/recovery-exercise-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "evidence_class", "scenario", "environment", "canadian_region", "authorized_by", "started_at", "failure_detected_at", "recovery_declared_at", "useful_service_restored_at", "last_durable_fact_at", "recovered_through_at", "rpo_target_seconds", "rto_target_seconds", "measured_rpo_seconds", "measured_rto_seconds", "restore_steps", "authority_controls", "message_controls", "integrity", "result"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "evidence_class": { "enum": ["local_simulated_qualification", "test_environment_exercise", "production_exercise"] },
+    "scenario": { "type": "string", "minLength": 1 },
+    "environment": { "type": "string", "minLength": 1 },
+    "canadian_region": { "type": "string", "pattern": "^ca-" },
+    "authorized_by": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "started_at": { "type": "string", "format": "date-time" },
+    "failure_detected_at": { "type": "string", "format": "date-time" },
+    "recovery_declared_at": { "type": "string", "format": "date-time" },
+    "useful_service_restored_at": { "type": "string", "format": "date-time" },
+    "last_durable_fact_at": { "type": "string", "format": "date-time" },
+    "recovered_through_at": { "type": "string", "format": "date-time" },
+    "rpo_target_seconds": { "type": "integer", "minimum": 0 },
+    "rto_target_seconds": { "type": "integer", "minimum": 1 },
+    "measured_rpo_seconds": { "type": "integer", "minimum": 0 },
+    "measured_rto_seconds": { "type": "integer", "minimum": 0 },
+    "restore_steps": { "type": "array", "minItems": 8, "items": { "type": "object", "additionalProperties": false, "required": ["order", "component", "completed_at", "evidence_digest"], "properties": { "order": { "type": "integer", "minimum": 1 }, "component": { "type": "string" }, "completed_at": { "type": "string", "format": "date-time" }, "evidence_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" } } } },
+    "authority_controls": { "type": "object", "additionalProperties": false, "required": ["recovery_epoch_incremented", "expired_grants_rejected", "leases_invalidated", "fresh_authority_required", "command_traffic_enabled_after_reconciliation"], "properties": { "recovery_epoch_incremented": { "const": true }, "expired_grants_rejected": { "const": true }, "leases_invalidated": { "const": true }, "fresh_authority_required": { "const": true }, "command_traffic_enabled_after_reconciliation": { "const": true } } },
+    "message_controls": { "type": "object", "additionalProperties": false, "required": ["consumers_restored_paused", "facts_replayed_idempotently", "commands_quarantined", "blind_command_replay", "duplicate_physical_effects"], "properties": { "consumers_restored_paused": { "const": true }, "facts_replayed_idempotently": { "const": true }, "commands_quarantined": { "const": true }, "blind_command_replay": { "const": false }, "duplicate_physical_effects": { "const": 0 } } },
+    "integrity": { "type": "object", "additionalProperties": false, "required": ["backup_digest_verified", "tenant_scope_verified", "gaps_reconciled", "audit_preserved"], "properties": { "backup_digest_verified": { "const": true }, "tenant_scope_verified": { "const": true }, "gaps_reconciled": { "const": true }, "audit_preserved": { "const": true } } },
+    "result": { "enum": ["pass", "fail"] },
+    "limitations": { "type": "array", "items": { "type": "string" } }
+  }
+}

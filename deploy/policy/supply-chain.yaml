@@ -1,0 +1,21 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata: {name: require-signed-digest-images}
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: immutable-image-digest
+      match: {any: [{resources: {kinds: [Pod]}}]}
+      validate:
+        message: Images must be promoted by sha256 digest.
+        pattern: {spec: {containers: [{image: "*@sha256:*"}]}}
+    - name: verify-wildfire-images
+      match: {any: [{resources: {kinds: [Pod], images: ["ghcr.io/wildfire-robotics/*"]}}]}
+      verifyImages:
+        - imageReferences: ["ghcr.io/wildfire-robotics/*"]
+          mutateDigest: false
+          required: true
+          verifyDigest: true
+          attestors: [{entries: [{keyless: {subject: "https://github.com/wildfire-robotics/*", issuer: "https://token.actions.githubusercontent.com"}}]}]
+          attestations: [{predicateType: "https://slsa.dev/provenance/v1"}]

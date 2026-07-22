@@ -1,0 +1,9 @@
+.git
+.swarm
+.claude
+.claude-flow
+.agents
+target
+**/target
+**/node_modules
+agentdb.rvf*

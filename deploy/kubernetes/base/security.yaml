@@ -1,0 +1,45 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: {name: api-gateway-read-config}
+rules:
+  - apiGroups: [""]
+    resources: [configmaps]
+    resourceNames: [regional-placement, data-service-contracts]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: api-gateway-read-config}
+subjects: [{kind: ServiceAccount, name: api-gateway}]
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: api-gateway-read-config}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: default-deny}
+spec: {podSelector: {}, policyTypes: [Ingress, Egress]}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: api-gateway-explicit-egress}
+spec:
+  podSelector: {matchLabels: {app: api-gateway}}
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from: [{namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: ingress-system}}}]
+      ports: [{protocol: TCP, port: 8080}]
+  egress:
+    - to: [{namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: wildfire-system}}}]
+      ports: [{protocol: TCP, port: 4222}, {protocol: TCP, port: 4317}]
+    - to: [{namespaceSelector: {}, podSelector: {matchLabels: {k8s-app: kube-dns}}}]
+      ports: [{protocol: UDP, port: 53}, {protocol: TCP, port: 53}]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: cryptographic-policy}
+data:
+  secret_provider: csi-external
+  kms_or_hsm: required
+  tenant_key_scope: required-for-protected-data
+  rotation_max_days: "90"
+  key_escrow: prohibited
+  plaintext_kubernetes_secrets: prohibited

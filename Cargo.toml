@@ -27,6 +27,7 @@ members = [
   "crates/safety-assurance",
   "crates/identity-access",
   "crates/commercial-operations",
+  "crates/infrastructure-recovery",
   "crates/vegetation-management",
   "crates/robot-care-recovery",
   "crates/aerial-deployment-operations",
