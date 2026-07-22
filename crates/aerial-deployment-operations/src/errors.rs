@@ -83,4 +83,14 @@ pub enum DomainError {
     RecoveryClosureInhibited,
     #[error("the external handoff acknowledgement is invalid or conflicts with the request")]
     InvalidHandoff,
+    #[error("operator authorization or resource scope does not permit the request")]
+    OperatorForbidden,
+    #[error("the safety view is stale or has incomplete provenance")]
+    UnsafeOperatorView,
+    #[error("the geospatial reference system or geometry is unsupported")]
+    InvalidMapReference,
+    #[error("irreversible command confirmation does not bind the exact command")]
+    ConfirmationRequired,
+    #[error("an immutable audit or bulk artifact could not be persisted")]
+    OperatorPersistenceFailed,
 }

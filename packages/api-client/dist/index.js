@@ -66,3 +66,4 @@ export class WildfireApiClient {
         return payload;
     }
 }
+export * from "./aerial.generated.js";

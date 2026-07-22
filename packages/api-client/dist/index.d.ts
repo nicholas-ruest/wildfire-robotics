@@ -90,4 +90,4 @@ export declare class WildfireApiClient {
     dispatchMission(missionId: string, body: DispatchRequest, idempotencyKey: string, options: RequestOptions): Promise<CommandOutcome>;
     commandOutcome(commandId: string, options: RequestOptions): Promise<CommandOutcome>;
 }
-export {};
+export * from "./aerial.generated.js";
