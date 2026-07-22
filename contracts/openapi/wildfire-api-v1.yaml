@@ -1,0 +1,1099 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Wildfire Robotics External API",
+    "version": "1.0.0",
+    "description": "Versioned customer boundary. Authentication scope is authoritative; tenant and region are never accepted from request bodies. HTTP command acceptance does not imply physical execution.",
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.example.invalid"
+    }
+  ],
+  "security": [
+    {
+      "oauth2": []
+    }
+  ],
+  "paths": {
+    "/v1/incidents": {
+      "get": {
+        "$ref": "#/components/x-operations/listIncidents"
+      }
+    },
+    "/v1/missions": {
+      "get": {
+        "$ref": "#/components/x-operations/listMissions"
+      }
+    },
+    "/v1/fleet/assets": {
+      "get": {
+        "$ref": "#/components/x-operations/listFleetAssets"
+      }
+    },
+    "/v1/stations": {
+      "get": {
+        "$ref": "#/components/x-operations/listStations"
+      }
+    },
+    "/v1/logistics/deliveries": {
+      "get": {
+        "$ref": "#/components/x-operations/listDeliveries"
+      }
+    },
+    "/v1/hazards": {
+      "get": {
+        "$ref": "#/components/x-operations/listHazards"
+      }
+    },
+    "/v1/safety/occurrences": {
+      "get": {
+        "$ref": "#/components/x-operations/listSafetyOccurrences"
+      }
+    },
+    "/v1/recovery/cases": {
+      "get": {
+        "$ref": "#/components/x-operations/listRecoveryCases"
+      }
+    },
+    "/v1/missions/{missionId}/dispatch": {
+      "post": {
+        "$ref": "#/components/x-operations/dispatchMission"
+      }
+    },
+    "/v1/commands/{commandId}": {
+      "get": {
+        "$ref": "#/components/x-operations/getCommandOutcome"
+      }
+    },
+    "/ogc/v1": {
+      "get": {
+        "$ref": "#/components/x-operations/ogcLanding"
+      }
+    },
+    "/ogc/v1/conformance": {
+      "get": {
+        "$ref": "#/components/x-operations/ogcConformance"
+      }
+    },
+    "/ogc/v1/collections": {
+      "get": {
+        "$ref": "#/components/x-operations/ogcCollections"
+      }
+    },
+    "/ogc/v1/collections/{collectionId}/items": {
+      "get": {
+        "$ref": "#/components/x-operations/ogcItems"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "description": "OIDC access token containing mandatory tenant and region claims.",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://identity.example.invalid/oauth2/authorize",
+            "tokenUrl": "https://identity.example.invalid/oauth2/token",
+            "scopes": {
+              "read:operations": "Read authorized operational projections",
+              "command:missions": "Request mission commands",
+              "read:geospatial": "Read authorized OGC collections"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500,
+          "default": 100
+        }
+      },
+      "Cursor": {
+        "name": "cursor",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 2048
+        }
+      },
+      "MissionId": {
+        "name": "missionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Identifier"
+        }
+      },
+      "CommandId": {
+        "name": "commandId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Identifier"
+        }
+      },
+      "CollectionId": {
+        "name": "collectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "hazard-pictures",
+            "incident-restrictions",
+            "mission-operating-areas",
+            "station-coverage"
+          ]
+        }
+      },
+      "RequestDeadline": {
+        "name": "X-Request-Deadline",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._~-]+$"
+        }
+      }
+    },
+    "headers": {
+      "RateLimitLimit": {
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "RateLimitRemaining": {
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "RetryAfter": {
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        }
+      }
+    },
+    "responses": {
+      "Problem": {
+        "description": "Request rejected",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Rate or concurrency limit exceeded",
+        "headers": {
+          "Retry-After": {
+            "$ref": "#/components/headers/RetryAfter"
+          },
+          "RateLimit-Limit": {
+            "$ref": "#/components/headers/RateLimitLimit"
+          },
+          "RateLimit-Remaining": {
+            "$ref": "#/components/headers/RateLimitRemaining"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Identifier": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+      },
+      "DataState": {
+        "type": "string",
+        "enum": [
+          "fresh",
+          "stale",
+          "gap",
+          "degraded",
+          "unknown"
+        ]
+      },
+      "Freshness": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "state",
+          "recordedAt"
+        ],
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/DataState"
+          },
+          "observedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "validAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "ageMillis": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "gaps": {
+            "type": "array",
+            "maxItems": 64,
+            "items": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        }
+      },
+      "Provenance": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "producer",
+          "sourceVersion",
+          "digest"
+        ],
+        "properties": {
+          "producer": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "sourceVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "limitations": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "string",
+              "maxLength": 512
+            }
+          }
+        }
+      },
+      "Uncertainty": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "description"
+        ],
+        "properties": {
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "confidence": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "lower": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "upper": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 64
+          }
+        }
+      },
+      "ReadModel": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "freshness",
+          "provenance",
+          "uncertainty",
+          "summary"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "freshness": {
+            "$ref": "#/components/schemas/Freshness"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "uncertainty": {
+            "$ref": "#/components/schemas/Uncertainty"
+          },
+          "summary": {
+            "type": "object",
+            "maxProperties": 64,
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "integer",
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "ReadModelPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 500,
+            "items": {
+              "$ref": "#/components/schemas/ReadModel"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2048
+          }
+        }
+      },
+      "Problem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "title",
+          "status",
+          "correlationId"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 512
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 400,
+            "maximum": 599
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "correlationId": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "errors": {
+            "type": "array",
+            "maxItems": 64,
+            "items": {
+              "type": "object",
+              "maxProperties": 8
+            }
+          }
+        }
+      },
+      "DispatchRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "assignmentId",
+          "planDigest",
+          "authorityVersion",
+          "expectedMissionVersion"
+        ],
+        "properties": {
+          "assignmentId": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "planDigest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "authorityVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "expectedMissionVersion": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "CommandState": {
+        "type": "string",
+        "enum": [
+          "rejected",
+          "accepted",
+          "queued",
+          "dispatched",
+          "acknowledged",
+          "executed",
+          "verified",
+          "expired",
+          "inhibited",
+          "indeterminate"
+        ]
+      },
+      "CommandOutcome": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "commandId",
+          "state",
+          "authoritative",
+          "updatedAt",
+          "correlationId"
+        ],
+        "properties": {
+          "commandId": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "state": {
+            "$ref": "#/components/schemas/CommandState"
+          },
+          "authoritative": {
+            "type": "boolean",
+            "description": "False for gateway transport acceptance; true only for an owning-context outcome."
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "correlationId": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1024
+          }
+        }
+      },
+      "Link": {
+        "type": "object",
+        "required": [
+          "href",
+          "rel",
+          "type"
+        ],
+        "properties": {
+          "href": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048
+          },
+          "rel": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 256
+          }
+        }
+      },
+      "OgcLanding": {
+        "type": "object",
+        "required": [
+          "title",
+          "links"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "OgcConformance": {
+        "type": "object",
+        "required": [
+          "conformsTo"
+        ],
+        "properties": {
+          "conformsTo": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 16,
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      },
+      "OgcCollections": {
+        "type": "object",
+        "required": [
+          "collections",
+          "links"
+        ],
+        "properties": {
+          "collections": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "title",
+                "links"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "title": {
+                  "type": "string",
+                  "maxLength": 256
+                },
+                "links": {
+                  "type": "array",
+                  "maxItems": 16,
+                  "items": {
+                    "$ref": "#/components/schemas/Link"
+                  }
+                }
+              }
+            }
+          },
+          "links": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "GeoJsonFeatureCollection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "features",
+          "links",
+          "timeStamp"
+        ],
+        "properties": {
+          "type": {
+            "const": "FeatureCollection"
+          },
+          "features": {
+            "type": "array",
+            "maxItems": 500,
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "id",
+                "geometry",
+                "properties"
+              ],
+              "properties": {
+                "type": {
+                  "const": "Feature"
+                },
+                "id": {
+                  "$ref": "#/components/schemas/Identifier"
+                },
+                "geometry": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "maxProperties": 3
+                },
+                "properties": {
+                  "type": "object",
+                  "maxProperties": 64
+                }
+              }
+            }
+          },
+          "links": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          },
+          "timeStamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "numberReturned": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          }
+        }
+      }
+    },
+    "x-operations": {
+      "listIncidents": {
+        "operationId": "listIncidents",
+        "summary": "List scoped operational projections",
+        "tags": [
+          "query"
+        ],
+        "security": [
+          {
+            "oauth2": [
+              "read:operations"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/RequestDeadline"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped incident projections",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadModelPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "504": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "listMissions": {
+        "$ref": "#/components/x-operations/listIncidents",
+        "operationId": "listMissions"
+      },
+      "listFleetAssets": {
+        "$ref": "#/components/x-operations/listIncidents",
+        "operationId": "listFleetAssets"
+      },
+      "listStations": {
+        "$ref": "#/components/x-operations/listIncidents",
+        "operationId": "listStations"
+      },
+      "listDeliveries": {
+        "$ref": "#/components/x-operations/listIncidents",
+        "operationId": "listDeliveries"
+      },
+      "listHazards": {
+        "$ref": "#/components/x-operations/listIncidents",
+        "operationId": "listHazards"
+      },
+      "listSafetyOccurrences": {
+        "$ref": "#/components/x-operations/listIncidents",
+        "operationId": "listSafetyOccurrences"
+      },
+      "listRecoveryCases": {
+        "$ref": "#/components/x-operations/listIncidents",
+        "operationId": "listRecoveryCases"
+      },
+      "dispatchMission": {
+        "operationId": "dispatchMission",
+        "summary": "Request owning-context mission dispatch evaluation",
+        "tags": [
+          "command"
+        ],
+        "security": [
+          {
+            "oauth2": [
+              "command:missions"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MissionId"
+          },
+          {
+            "$ref": "#/components/parameters/RequestDeadline"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DispatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted for owning-context evaluation; not physical execution",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandOutcome"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "504": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "getCommandOutcome": {
+        "operationId": "getCommandOutcome",
+        "summary": "Get current owning-context command outcome",
+        "tags": [
+          "command-status"
+        ],
+        "security": [
+          {
+            "oauth2": [
+              "read:operations"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CommandId"
+          },
+          {
+            "$ref": "#/components/parameters/RequestDeadline"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current owning-context command outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandOutcome"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      },
+      "ogcLanding": {
+        "operationId": "getOgcLanding",
+        "summary": "Get the scoped OGC landing page",
+        "tags": [
+          "ogc-query"
+        ],
+        "security": [
+          {
+            "oauth2": [
+              "read:geospatial"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestDeadline"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OGC landing page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OgcLanding"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      },
+      "ogcConformance": {
+        "$ref": "#/components/x-operations/ogcLanding",
+        "operationId": "getOgcConformance",
+        "summary": "Get implemented OGC conformance classes",
+        "responses": {
+          "200": {
+            "description": "Implemented OGC conformance classes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OgcConformance"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Problem" },
+          "403": { "$ref": "#/components/responses/Problem" }
+        }
+      },
+      "ogcCollections": {
+        "$ref": "#/components/x-operations/ogcLanding",
+        "operationId": "listOgcCollections",
+        "summary": "List authorized OGC collections",
+        "responses": {
+          "200": {
+            "description": "Authorized collection catalog",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OgcCollections"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Problem" },
+          "403": { "$ref": "#/components/responses/Problem" }
+        }
+      },
+      "ogcItems": {
+        "operationId": "listOgcCollectionItems",
+        "summary": "List scoped collection features",
+        "tags": [
+          "ogc-query"
+        ],
+        "security": [
+          {
+            "oauth2": [
+              "read:geospatial"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CollectionId"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "bbox",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 6,
+              "items": {
+                "type": "number"
+              }
+            },
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "datetime",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 128
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestDeadline"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized GeoJSON features",
+            "content": {
+              "application/geo+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeoJsonFeatureCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "504": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@wildfire-robotics/api-client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "files": ["dist"],
+  "scripts": {
+    "validate:contract": "node scripts/validate-contract.mjs",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run validate:contract && npm run build && node --test dist/contract.test.js",
+    "check": "npm test"
+  },
+  "devDependencies": {
+    "@types/node": "24.3.0",
+    "typescript": "5.9.2"
+  }
+}

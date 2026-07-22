@@ -1,0 +1,1 @@
+{"name":"@wildfire/operator-web","version":"0.1.0","private":true,"type":"module","scripts":{"build":"tsc --noEmit && vite build","test":"vitest run","lint":"tsc --noEmit"},"dependencies":{"@wildfire-robotics/api-client":"file:../api-client"},"devDependencies":{"@types/node":"^24.0.0","axe-core":"^4.10.3","jsdom":"^26.1.0","typescript":"^5.8.3","vite":"^6.3.5","vitest":"^3.2.4"}}
