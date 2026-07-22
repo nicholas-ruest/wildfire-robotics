@@ -1601,6 +1601,7 @@ dependencies = [
  "chrono",
  "proptest",
  "serde",
+ "sha2",
  "shared-kernel",
  "thiserror",
 ]
@@ -2421,6 +2422,12 @@ dependencies = [
 [[package]]
 name = "robot-care-recovery"
 version = "0.1.0"
+dependencies = [
+ "chrono",
+ "proptest",
+ "shared-kernel",
+ "thiserror",
+]
 
 [[package]]
 name = "rsa"

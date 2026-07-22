@@ -3,6 +3,7 @@
 
 use crate::LogisticsError;
 use chrono::{DateTime, Utc};
+use sha2::{Digest as _, Sha256};
 use shared_kernel::EntityId;
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -351,16 +352,47 @@ pub struct CustodyTransfer {
     pub previous_digest: [u8; 32],
     pub digest: [u8; 32],
 }
+impl CustodyTransfer {
+    #[must_use]
+    pub fn compute_digest(&self) -> [u8; 32] {
+        let mut h = Sha256::new();
+        for value in [
+            self.id.to_string(),
+            self.item_id.to_string(),
+            self.giver.clone(),
+            self.receiver.clone(),
+            self.amount.to_string(),
+            self.unit.clone(),
+            self.condition.clone(),
+            self.place.clone(),
+            self.occurred_at.timestamp_millis().to_string(),
+            self.discrepancy.clone().unwrap_or_default(),
+        ] {
+            h.update((value.len() as u64).to_be_bytes());
+            h.update(value.as_bytes());
+        }
+        h.update(self.evidence_digest);
+        h.update(self.previous_digest);
+        h.finalize().into()
+    }
+}
 
 #[derive(Clone, Debug, Default)]
 pub struct CustodyChain {
     transfers: Vec<CustodyTransfer>,
-    seen: BTreeSet<String>,
+    seen: BTreeMap<String, [u8; 32]>,
 }
 impl CustodyChain {
     pub fn append(&mut self, transfer: CustodyTransfer) -> Result<bool, LogisticsError> {
-        if self.seen.contains(&transfer.id.to_string()) {
-            return Ok(false);
+        if transfer.digest != transfer.compute_digest() {
+            return Err(LogisticsError::InvalidCustody);
+        }
+        if let Some(digest) = self.seen.get(&transfer.id.to_string()) {
+            return if digest == &transfer.digest {
+                Ok(false)
+            } else {
+                Err(LogisticsError::InvalidCustody)
+            };
         }
         let expected = self.transfers.last().map_or([0; 32], |v| v.digest);
         let prior_receiver = self
@@ -378,13 +410,13 @@ impl CustodyChain {
             || transfer.condition.trim().is_empty()
             || transfer.place.trim().is_empty()
             || transfer.evidence_digest == [0; 32]
-            || transfer.digest == [0; 32]
+            || transfer.digest != transfer.compute_digest()
             || transfer.previous_digest != expected
             || prior_receiver.is_some_and(|receiver| receiver != transfer.giver)
         {
             return Err(LogisticsError::InvalidCustody);
         }
-        self.seen.insert(transfer.id.to_string());
+        self.seen.insert(transfer.id.to_string(), transfer.digest);
         self.transfers.push(transfer);
         Ok(true)
     }

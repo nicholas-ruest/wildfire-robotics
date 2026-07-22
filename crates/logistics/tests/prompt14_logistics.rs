@@ -101,7 +101,7 @@ fn transfer(
     previous: [u8; 32],
     digest: [u8; 32],
 ) -> CustodyTransfer {
-    CustodyTransfer {
+    let mut transfer = CustodyTransfer {
         id: EntityId::new(),
         item_id: item_id.clone(),
         giver: giver.into(),
@@ -115,7 +115,9 @@ fn transfer(
         discrepancy: None,
         previous_digest: previous,
         digest,
-    }
+    };
+    transfer.digest = transfer.compute_digest();
+    transfer
 }
 
 #[test]
@@ -123,14 +125,30 @@ fn custody_replay_is_idempotent_and_lineage_cannot_fork_or_skip_custodian() {
     let item_id = EntityId::new();
     let mut chain = CustodyChain::default();
     let first = transfer(&item_id, "supplier", "station", [0; 32], [1; 32]);
+    let first_digest = first.digest;
     assert!(chain.append(first.clone()).unwrap());
+    let mut tampered = first.clone();
+    tampered.condition = "damaged".into();
+    assert_eq!(chain.append(tampered), Err(LogisticsError::InvalidCustody));
     assert!(!chain.append(first).unwrap());
     assert_eq!(
-        chain.append(transfer(&item_id, "attacker", "vehicle", [1; 32], [2; 32])),
+        chain.append(transfer(
+            &item_id,
+            "attacker",
+            "vehicle",
+            first_digest,
+            [2; 32]
+        )),
         Err(LogisticsError::InvalidCustody)
     );
     chain
-        .append(transfer(&item_id, "station", "vehicle", [1; 32], [2; 32]))
+        .append(transfer(
+            &item_id,
+            "station",
+            "vehicle",
+            first_digest,
+            [2; 32],
+        ))
         .unwrap();
     assert_eq!(chain.lineage(&item_id).len(), 2);
 }
