@@ -93,4 +93,10 @@ pub enum DomainError {
     ConfirmationRequired,
     #[error("an immutable audit or bulk artifact could not be persisted")]
     OperatorPersistenceFailed,
+    #[error("the qualification scenario, model contract, or validity domain is invalid")]
+    InvalidQualificationModel,
+    #[error("the specialist model produced an invalid or non-reproducible artifact")]
+    InvalidModelArtifact,
+    #[error("the simulation, SIL, or HITL result disagrees beyond its declared tolerance")]
+    ModelDisagreement,
 }

@@ -11,6 +11,14 @@ serde.workspace = true
 sha2.workspace = true
 thiserror.workspace = true
 
+[dev-dependencies]
+criterion = "0.5.1"
+serde_json.workspace = true
+
+[[bench]]
+name = "qualification_campaign"
+harness = false
+
 [features]
 default = []
 test-fixtures = []
