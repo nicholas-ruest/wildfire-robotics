@@ -92,6 +92,14 @@ const VALUES: &[&str] = &[
     "DeploymentPhase",
     "InstallationPhase",
     "ComponentDisposition",
+    "AircraftBinding",
+    "MissionBindings",
+    "ReleaseCondition",
+    "SourceObservation",
+    "AuthorityRole",
+    "DecisionOutcome",
+    "AuthorityDecision",
+    "LeastHarmContingency",
 ];
 const EVENTS: &[&str] = &[
     "BlanketConfigurationRegistered",
@@ -148,6 +156,7 @@ fn cargo_and_domain_sources_reject_forbidden_runtime_dependencies() {
     let allowed = [
         "chrono",
         "serde",
+        "sha2",
         "thiserror",
         "shared-kernel",
         "contracts-generated",

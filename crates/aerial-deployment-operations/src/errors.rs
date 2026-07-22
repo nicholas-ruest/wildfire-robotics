@@ -43,4 +43,20 @@ pub enum DomainError {
     InvalidReconciliation,
     #[error("the payload loading plan or approved aircraft constraints are incomplete")]
     IncompleteLoadingPlan,
+    #[error("the mission binding is incomplete, ambiguous, or inconsistent")]
+    InvalidMissionBinding,
+    #[error("the source observation is absent, stale, or below its required confidence")]
+    UnsafeOrStaleObservation,
+    #[error("the release decision does not bind the current canonical command digest")]
+    ReleaseDigestMismatch,
+    #[error("the release decision is a hold, veto, or abort")]
+    ReleaseInhibited,
+    #[error("the aggregate version is stale")]
+    VersionConflict,
+    #[error("the command was already applied with different content")]
+    ReplayConflict,
+    #[error("the requested contingency was not pre-authorized or is not least-harm")]
+    ContingencyNotAuthorized,
+    #[error("the point of no return or release boundary forbids this operation")]
+    OperationalBoundaryCrossed,
 }

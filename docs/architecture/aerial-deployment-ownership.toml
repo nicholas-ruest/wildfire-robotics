@@ -7,11 +7,11 @@ event_namespace = "wildfire.aerial_deployment_operations.v1"
 protobuf_namespace = "wildfire.aerial_deployment.v1"
 
 aggregates = ["BlanketConfiguration", "MembraneAssembly", "PayloadManifest", "AerialDropMission", "ReleaseAuthorization", "AirborneDeployment", "GroundInstallation"]
-values = ["BlanketConfigurationId", "MaterialRevisionId", "PanelId", "JointId", "VentId", "AnchorId", "TetherId", "ReelId", "ParafoilId", "CradleId", "RobotId", "AircraftConfigurationId", "PayloadManifestId", "ReleaseCorridorId", "FootprintId", "ExclusionZoneId", "JettisonZoneId", "EmergencyLandingZoneId", "AssemblyId", "AerialDropMissionId", "ReleaseAuthorizationId", "AirborneDeploymentId", "GroundInstallationId", "EvidenceId", "OddId", "CommandId", "EventId", "ComponentId", "EffectivenessStudyId", "EvidenceRef", "OperationScope", "QualificationStage", "AssemblyPhase", "ManifestPhase", "MissionPhase", "ReleasePhase", "DeploymentPhase", "InstallationPhase", "ComponentDisposition"]
+values = ["BlanketConfigurationId", "MaterialRevisionId", "PanelId", "JointId", "VentId", "AnchorId", "TetherId", "ReelId", "ParafoilId", "CradleId", "RobotId", "AircraftConfigurationId", "PayloadManifestId", "ReleaseCorridorId", "FootprintId", "ExclusionZoneId", "JettisonZoneId", "EmergencyLandingZoneId", "AssemblyId", "AerialDropMissionId", "ReleaseAuthorizationId", "AirborneDeploymentId", "GroundInstallationId", "EvidenceId", "OddId", "CommandId", "EventId", "ComponentId", "EffectivenessStudyId", "EvidenceRef", "OperationScope", "QualificationStage", "AssemblyPhase", "ManifestPhase", "MissionPhase", "ReleasePhase", "DeploymentPhase", "InstallationPhase", "ComponentDisposition", "AircraftBinding", "MissionBindings", "ReleaseCondition", "SourceObservation", "AuthorityRole", "DecisionOutcome", "AuthorityDecision", "LeastHarmContingency"]
 events = ["BlanketConfigurationRegistered", "BlanketConfigurationPromoted", "BlanketConfigurationSuspended", "MembraneStateChanged", "PayloadLoadApproved", "PayloadAccounted", "AerialDropMissionAuthorized", "AerialDropMissionChanged", "ReleaseArmed", "PayloadReleased", "ReleaseAborted", "DeploymentPhaseChanged", "PanelIsolated", "SectionJettisoned", "BlanketActivated", "BlanketDegraded", "BlanketRecovered", "ComponentDispositionChanged"]
 
 [dependencies]
-allowed = ["chrono", "serde", "thiserror", "shared-kernel", "contracts-generated"]
+allowed = ["chrono", "serde", "sha2", "thiserror", "shared-kernel", "contracts-generated"]
 forbidden = ["aircraft vendor SDKs", "ruv-drone", "database clients/ORMs", "message brokers", "web frameworks", "simulation engines", "other bounded-context domain crates"]
 
 [external_ownership]
