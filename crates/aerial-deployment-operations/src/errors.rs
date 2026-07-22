@@ -75,4 +75,12 @@ pub enum DomainError {
     GroundSensingInhibited,
     #[error("the requested ground policy action is not bounded for the affected zone")]
     GroundPolicyInhibited,
+    #[error("the recovery record is incomplete or inconsistent")]
+    InvalidRecoveryRecord,
+    #[error("the serialized item is not present in the recovery ledger")]
+    UnknownSerializedItem,
+    #[error("the item cannot be closed without authority, search evidence, and a hazard notice")]
+    RecoveryClosureInhibited,
+    #[error("the external handoff acknowledgement is invalid or conflicts with the request")]
+    InvalidHandoff,
 }

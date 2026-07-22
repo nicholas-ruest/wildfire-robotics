@@ -45,7 +45,10 @@ opaque_ids!(
     CommandId,
     EventId,
     ComponentId,
-    EffectivenessStudyId
+    EffectivenessStudyId,
+    ObservationId,
+    SearchId,
+    HandoffRequestId
 );
 
 #[cfg(test)]
