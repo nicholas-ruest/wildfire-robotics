@@ -1,0 +1,1 @@
+{"schema_version":1,"fixture":"prompt23-geometry-safety-v1","geometry_iterations":100000,"valid":100000,"total_microseconds":3126,"environment":"workspace release build; environment-dependent","safety_fault_cases":8,"workflow_scenarios":8,"scope":"Deterministic geometry/workflow qualification; not field effectiveness or robot throughput evidence."}
