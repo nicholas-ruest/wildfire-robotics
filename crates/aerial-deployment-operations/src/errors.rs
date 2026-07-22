@@ -59,4 +59,12 @@ pub enum DomainError {
     ContingencyNotAuthorized,
     #[error("the point of no return or release boundary forbids this operation")]
     OperationalBoundaryCrossed,
+    #[error("an airborne transition margin is absent, unsafe, or stale")]
+    UnsafeTransitionMargin,
+    #[error("the requested local cohort is absent or exceeds its bounded limit")]
+    InvalidCohort,
+    #[error("safe-sector evidence is required before jettison")]
+    SafeSectorNotConfirmed,
+    #[error("advisory output is malformed")]
+    InvalidAdvisory,
 }

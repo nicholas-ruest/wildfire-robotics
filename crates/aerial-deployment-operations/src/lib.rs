@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 #![allow(missing_docs)]
 //! Experimental aerial deployment domain boundary (ADR-069–ADR-074).
+pub mod airborne;
 pub mod commands;
 pub mod configuration;
 pub mod domain;
@@ -10,6 +11,7 @@ pub mod ids;
 pub mod mission;
 pub mod payload;
 pub mod value;
+pub use airborne::*;
 pub use commands::*;
 pub use configuration::*;
 pub use domain::*;
