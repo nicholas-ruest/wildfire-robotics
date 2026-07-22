@@ -10,5 +10,9 @@ chrono.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 
+[features]
+default = []
+test-fixtures = []
+
 [lints]
 workspace = true

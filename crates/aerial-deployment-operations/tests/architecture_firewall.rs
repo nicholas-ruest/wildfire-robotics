@@ -144,11 +144,7 @@ fn cargo_and_domain_sources_reject_forbidden_runtime_dependencies() {
     for name in FORBIDDEN.iter().chain(CONTEXT_CRATES) {
         assert!(!cargo.contains(name), "forbidden aerial dependency: {name}");
     }
-    let dependency_section = cargo
-        .split("[dependencies]")
-        .nth(1)
-        .and_then(|s| s.split("[lints]").next())
-        .unwrap_or("");
+    let dependency_section = cargo.split("[dependencies]").nth(1).unwrap_or("");
     let allowed = [
         "chrono",
         "serde",
@@ -156,7 +152,11 @@ fn cargo_and_domain_sources_reject_forbidden_runtime_dependencies() {
         "shared-kernel",
         "contracts-generated",
     ];
-    for line in dependency_section.lines().filter(|line| line.contains('=')) {
+    for line in dependency_section
+        .lines()
+        .take_while(|line| !line.trim_start().starts_with('['))
+        .filter(|line| line.contains('='))
+    {
         let dependency = line.split(['.', '=']).next().unwrap_or("").trim();
         assert!(
             allowed.contains(&dependency),

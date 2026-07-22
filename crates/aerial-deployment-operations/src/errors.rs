@@ -29,4 +29,18 @@ pub enum DomainError {
     InvalidTransition,
     #[error("the serialized component is absent or duplicated")]
     InvalidComponent,
+    #[error("a physical quantity is non-finite, negative, or dimensionally invalid")]
+    InvalidQuantity,
+    #[error("the aircraft interface version does not match the approved contract")]
+    InterfaceVersionMismatch,
+    #[error("authoritative aircraft engineering evidence is missing or stale")]
+    AircraftEvidenceStale,
+    #[error("the manifest exceeds an approved aircraft or loading interface limit")]
+    LoadEnvelopeExceeded,
+    #[error("the inspected component serials differ from the planned manifest")]
+    ManifestSubstitution,
+    #[error("the manifest reconciliation transition is invalid")]
+    InvalidReconciliation,
+    #[error("the payload loading plan or approved aircraft constraints are incomplete")]
+    IncompleteLoadingPlan,
 }
