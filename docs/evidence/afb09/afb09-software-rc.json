@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "candidate_kind": "software-release-candidate-only",
+  "configuration_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "qualification_stage": "FullSystemCandidate",
+  "signed_configuration_manifest": {
+    "uri": "object://release/afb09/configuration-manifest.json",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "signer_role": "independent-software-assurance"
+  },
+  "software_gates": ["domain", "contract", "replay", "security", "recovery", "simulation", "fault", "performance", "endurance"],
+  "supply_chain": {
+    "sbom": "target/evidence/sbom/wildfire-robotics.cdx.json",
+    "provenance": "target/evidence/manifest.json",
+    "policy": "ADR-038"
+  },
+  "capacity_slo_report": "docs/benchmarks/prompt30-scale-qualification.json",
+  "unresolved_software_blockers": [],
+  "unresolved_risks": [
+    {"id": "AFB-PHY-001", "class": "physical-evidence-gap", "disposition": "blocks physical promotion"},
+    {"id": "AFB-AIR-001", "class": "aircraft-integration-gap", "disposition": "blocks aircraft approval"},
+    {"id": "AFB-FIRE-001", "class": "controlled-fire-gap", "disposition": "blocks effectiveness and operational claims"}
+  ],
+  "physical_evidence_still_required": ["material", "ground", "low-drop", "subscale", "aircraft-integration", "flight-test", "controlled-fire"],
+  "next_physical_gate": {
+    "stage": "material",
+    "protocol": "MAT-QUAL-001",
+    "independent_approver": "independent materials review board",
+    "criteria": ["rear-face heat dose below protocol threshold", "structural integrity threshold met", "environmental and toxicology limits met", "uncertainty budget accepted", "all adverse outcomes reconciled"]
+  },
+  "prohibited_claims": ["fireproof", "operational", "aircraft-approved", "commercially-ready", "production-ready"],
+  "traceability": [
+    {"adr": "ADR-009", "invariant": "AD-INV-011", "aggregate": "ReleaseDossier", "contract": "effectiveness evidence gate", "test": "exact_complete_current_software_evidence_yields_only_a_software_candidate", "evidence": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    {"adr": "ADR-011", "invariant": "AD-INV-011", "aggregate": "EffectivenessStudy", "contract": "counterfactual and uncertainty", "test": "effectiveness_requires_counterfactual_uncertainty_limitations_and_negative_outcomes", "evidence": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    {"adr": "ADR-038", "invariant": "AD-INV-001", "aggregate": "ReleaseDossier", "contract": "SBOM and provenance", "test": "fails_closed_for_missing_gate_wrong_configuration_stale_artifact_or_trace_gap", "evidence": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    {"adr": "ADR-045", "invariant": "AD-INV-011", "aggregate": "CandidateDecision", "contract": "independent physical approval", "test": "next_physical_stage_requires_independent_measurable_approval_criteria", "evidence": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    {"adr": "ADR-069", "invariant": "AD-INV-001", "aggregate": "CandidateDecision", "contract": "experimental claim boundary", "test": "blockers_and_unsupported_readiness_claims_inhibit_promotion", "evidence": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    {"adr": "ADR-070", "invariant": "AD-INV-003", "aggregate": "ReleaseDossier", "contract": "aircraft evidence remains separate", "test": "exact_complete_current_software_evidence_yields_only_a_software_candidate", "evidence": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    {"adr": "ADR-071", "invariant": "AD-INV-004", "aggregate": "EffectivenessStudy", "contract": "panel state and exposure", "test": "apparent_coverage_and_survival_cannot_substitute_for_effectiveness_evidence", "evidence": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    {"adr": "ADR-072", "invariant": "AD-INV-006", "aggregate": "ReleaseDossier", "contract": "physical stage separation", "test": "next_physical_stage_requires_independent_measurable_approval_criteria", "evidence": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    {"adr": "ADR-073", "invariant": "AD-INV-008", "aggregate": "CandidateDecision", "contract": "no operational authorization", "test": "blockers_and_unsupported_readiness_claims_inhibit_promotion", "evidence": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    {"adr": "ADR-074", "invariant": "AD-INV-010", "aggregate": "EffectivenessStudy", "contract": "negative outcomes and recovery evidence", "test": "effectiveness_requires_counterfactual_uncertainty_limitations_and_negative_outcomes", "evidence": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+  ]
+}

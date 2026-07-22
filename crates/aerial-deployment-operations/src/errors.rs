@@ -99,4 +99,12 @@ pub enum DomainError {
     InvalidModelArtifact,
     #[error("the simulation, SIL, or HITL result disagrees beyond its declared tolerance")]
     ModelDisagreement,
+    #[error(
+        "the effectiveness study is incomplete, internally inconsistent, or overclaims its result"
+    )]
+    InvalidEffectivenessStudy,
+    #[error("the release dossier does not bind complete current evidence for the exact candidate")]
+    ReleaseEvidenceIncomplete,
+    #[error("the release dossier contains a software blocker or an unsupported readiness claim")]
+    ReleasePromotionInhibited,
 }
