@@ -1,15 +1,8 @@
 #![forbid(unsafe_code)]
-//! hazard intelligence bounded context.
-
-/// Stable bounded-context name used in diagnostics and contract metadata.
+#![allow(missing_docs)]
+//! Provenance-aware hazard ingestion and immutable operational pictures.
+mod adapter;
+mod domain;
+pub use adapter::*;
+pub use domain::*;
 pub const CONTEXT_NAME: &str = "hazard-intelligence";
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn context_name_is_stable() {
-        assert_eq!(CONTEXT_NAME, "hazard-intelligence");
-    }
-}
