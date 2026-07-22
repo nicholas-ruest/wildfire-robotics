@@ -46,6 +46,10 @@ impl EvidenceRef {
     pub fn digest(&self) -> &str {
         &self.digest
     }
+    #[must_use]
+    pub fn id(&self) -> &EvidenceId {
+        &self.id
+    }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct OperationScope {
@@ -84,6 +88,25 @@ pub enum QualificationStage {
     FullSystemCandidate,
     Suspended,
     Retired,
+}
+impl QualificationStage {
+    #[must_use]
+    pub const fn next(self) -> Option<Self> {
+        match self {
+            Self::Concept => Some(Self::CouponMaterial),
+            Self::CouponMaterial => Some(Self::Component),
+            Self::Component => Some(Self::GroundMultiPanel),
+            Self::GroundMultiPanel => Some(Self::LowDrop),
+            Self::LowDrop => Some(Self::SubscaleExtraction),
+            Self::SubscaleExtraction => Some(Self::Sil),
+            Self::Sil => Some(Self::Hitl),
+            Self::Hitl => Some(Self::InstrumentedRange),
+            Self::InstrumentedRange => Some(Self::AircraftGroundExtraction),
+            Self::AircraftGroundExtraction => Some(Self::PartialScaleFlight),
+            Self::PartialScaleFlight => Some(Self::FullSystemCandidate),
+            Self::FullSystemCandidate | Self::Suspended | Self::Retired => None,
+        }
+    }
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AssemblyPhase {
