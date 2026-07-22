@@ -848,8 +848,10 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "criterion",
+ "hmac",
  "proptest",
  "serde",
+ "sha2",
  "shared-kernel",
  "thiserror",
 ]

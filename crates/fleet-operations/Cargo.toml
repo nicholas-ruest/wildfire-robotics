@@ -10,6 +10,8 @@ chrono.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 shared-kernel.workspace = true
+sha2.workspace = true
+hmac.workspace = true
 
 [dev-dependencies]
 criterion = "0.5.1"

@@ -46,6 +46,7 @@ thiserror = "2.0.12"
 uuid = { version = "1.16.0", features = ["serde", "v4"] }
 proptest = "1.7.0"
 sha2 = "0.10.9"
+hmac = "0.12.1"
 shared-kernel = { path = "crates/shared-kernel", version = "0.1.0" }
 trybuild = "1.0.116"
 

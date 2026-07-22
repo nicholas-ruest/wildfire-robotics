@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "fixture": "prompt25-conventional-v1",
+  "measured_at_utc": "2026-07-22",
+  "source_revision": "3a732fdd18d1497bddbe3c16dc25206c81cbc94f",
+  "rustc": "1.97.1 (8bab26f4f 2026-07-14)",
+  "target": "x86_64-unknown-linux-gnu",
+  "environment": "Linux 6.8.0-1052-azure, 8 logical CPUs",
+  "profile": "release",
+  "members": 128,
+  "max_cohort_members": 8,
+  "iterations": 10000,
+  "valid": 10000,
+  "total_microseconds": 575774,
+  "mean_microseconds_per_iteration": 57.5774,
+  "command": "cargo run -p fleet-operations --release --example collaboration_qualification",
+  "scope": "Deterministic advisory conventional graph-partition timing; not mission allocation, RVM runtime performance, or production-scale qualification."
+}
