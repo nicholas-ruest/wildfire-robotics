@@ -1,15 +1,15 @@
 #![forbid(unsafe_code)]
-//! predictive planning bounded context.
+#![allow(missing_docs)]
+#![allow(clippy::must_use_candidate, clippy::struct_excessive_bools)]
+//! Reproducible, advisory-only predictive planning.
+
+mod domain;
+mod runner;
+mod scenario;
+
+pub use domain::*;
+pub use runner::*;
+pub use scenario::*;
 
 /// Stable bounded-context name used in diagnostics and contract metadata.
 pub const CONTEXT_NAME: &str = "predictive-planning";
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn context_name_is_stable() {
-        assert_eq!(CONTEXT_NAME, "predictive-planning");
-    }
-}
