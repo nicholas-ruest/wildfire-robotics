@@ -1,7 +1,16 @@
 #![forbid(unsafe_code)]
-//! Boundary marker for the experimental Aerial Deployment Operations context.
-//!
-//! Domain behavior is intentionally deferred to the AFB promptbook.
-
-/// Stable bounded-context name used by ownership and deployment tooling.
+#![allow(missing_docs)]
+//! Experimental aerial deployment domain boundary (ADR-069–ADR-074).
+pub mod commands;
+pub mod domain;
+pub mod errors;
+pub mod events;
+pub mod ids;
+pub mod value;
+pub use commands::*;
+pub use domain::*;
+pub use errors::*;
+pub use events::*;
+pub use ids::*;
+pub use value::*;
 pub const CONTEXT_NAME: &str = "aerial-deployment-operations";
