@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "fixture": "prompt26-meter-v1",
+  "recorded_at": "2026-07-22",
+  "source_revision": "e2155a2e7c99d0c75a999c18a8723e549179c0fe",
+  "worktree_dirty": true,
+  "command": "cargo run -p commercial-operations --release --example meter_qualification",
+  "environment": {
+    "os": "Linux 6.8.0-1052-azure x86_64",
+    "target": "x86_64-unknown-linux-gnu",
+    "rustc": "1.97.1 (8bab26f4f 2026-07-14)",
+    "cargo": "1.97.1 (c980f4866 2026-06-30)"
+  },
+  "workload": {
+    "unique_facts": 10000,
+    "identical_replays": 10000,
+    "unit_price_minor_units": 7,
+    "currency": "CAD"
+  },
+  "result": {
+    "recorded": 10000,
+    "duplicates": 10000,
+    "ledger_entries": 10000,
+    "net_quantity": 10000,
+    "invoice_minor_units": 70000,
+    "total_microseconds": 7880
+  },
+  "scope": "In-memory immutable meter deduplication, close, reconciliation, effective-date rating, and invoice finalization. Excludes PostgreSQL, broker, tax, and accounting adapters; this is qualification evidence, not a production SLO."
+}

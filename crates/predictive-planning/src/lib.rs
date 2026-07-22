@@ -4,12 +4,14 @@
 //! Reproducible, advisory-only predictive planning.
 
 mod domain;
+mod investment;
 mod lightning;
 mod outcomes;
 mod runner;
 mod scenario;
 
 pub use domain::*;
+pub use investment::*;
 pub use lightning::*;
 pub use outcomes::*;
 pub use runner::*;

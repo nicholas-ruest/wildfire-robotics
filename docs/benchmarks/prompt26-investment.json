@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "fixture": "prompt26-investment-standard-v1",
+  "recorded_at": "2026-07-22",
+  "source_revision": "e2155a2e7c99d0c75a999c18a8723e549179c0fe",
+  "worktree_dirty": true,
+  "command": "cargo run -p predictive-planning --release --example investment_qualification",
+  "environment": {
+    "os": "Linux 6.8.0-1052-azure x86_64",
+    "target": "x86_64-unknown-linux-gnu",
+    "rustc": "1.97.1 (8bab26f4f 2026-07-14)",
+    "cargo": "1.97.1 (c980f4866 2026-06-30)"
+  },
+  "workload": {
+    "monte_carlo_runs": 10000,
+    "operational_facts": 8,
+    "horizon_years": 10,
+    "discount_basis_points": 500,
+    "seed": 1592598566,
+    "currency": "CAD"
+  },
+  "result": {
+    "npv_p05_minor_units": 9691560,
+    "npv_median_minor_units": 11263115,
+    "npv_p95_minor_units": 12801833,
+    "robot_tco_minor_units": 15550000,
+    "human_tco_minor_units": 30150000,
+    "causal_claim": false,
+    "result_digest": "7750b179f68000ec227906423aa99c0dc1cba98b3bdfe61b8c7e9b5f64343175",
+    "total_microseconds": 2957
+  },
+  "scope": "Deterministic single-process Monte Carlo standard profile. Excludes scheduler, persistence, and distributed execution; this is qualification evidence, not a production SLO or a causal savings claim."
+}
