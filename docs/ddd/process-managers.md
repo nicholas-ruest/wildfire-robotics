@@ -2,6 +2,8 @@
 
 These workflows implement ADR-043. Their durable state belongs to the named owner; every transition records correlation, authority, expected versions, deadline, attempts, and evidence.
 
+The normative timeout, compensation, escalation, and observable-containment contract for every process below is machine-readable in `contracts/release-registry.toml` and enforced by `contract-check`. A deadline expiring is an input to the durable state machine, not permission to assume success: the owner executes the named compensation idempotently, emits the containment fact, and escalates to the named independent authority. Recovery resumes from recorded state and fenced versions; it never rewrites completed physical or ledger facts.
+
 ## Incident activation
 
 - **Owner:** Incident Command.

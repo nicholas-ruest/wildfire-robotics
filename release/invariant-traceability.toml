@@ -1,0 +1,751 @@
+schema_version = 1
+
+[[invariant]]
+id = "AD-INV-001"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "AD-INV-002"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "AD-INV-003"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "AD-INV-004"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "AD-INV-005"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "AD-INV-006"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "AD-INV-007"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "AD-INV-008"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "AD-INV-009"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "AD-INV-010"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "AD-INV-011"
+context = "aerial-deployment-operations"
+code = "crates/aerial-deployment-operations/src/lib.rs"
+test = "crates/aerial-deployment-operations/tests/airborne_deployment.rs"
+evidence = "docs/ddd/contexts/aerial-deployment-operations.md"
+
+[[invariant]]
+id = "CO-INV-001"
+context = "commercial-operations"
+code = "crates/commercial-operations/src/lib.rs"
+test = "crates/commercial-operations/tests/prompt26_commercial.rs"
+evidence = "docs/ddd/contexts/commercial-operations.md"
+
+[[invariant]]
+id = "CO-INV-002"
+context = "commercial-operations"
+code = "crates/commercial-operations/src/lib.rs"
+test = "crates/commercial-operations/tests/prompt26_commercial.rs"
+evidence = "docs/ddd/contexts/commercial-operations.md"
+
+[[invariant]]
+id = "CO-INV-003"
+context = "commercial-operations"
+code = "crates/commercial-operations/src/lib.rs"
+test = "crates/commercial-operations/tests/prompt26_commercial.rs"
+evidence = "docs/ddd/contexts/commercial-operations.md"
+
+[[invariant]]
+id = "CO-INV-004"
+context = "commercial-operations"
+code = "crates/commercial-operations/src/lib.rs"
+test = "crates/commercial-operations/tests/prompt26_commercial.rs"
+evidence = "docs/ddd/contexts/commercial-operations.md"
+
+[[invariant]]
+id = "CO-INV-005"
+context = "commercial-operations"
+code = "crates/commercial-operations/src/lib.rs"
+test = "crates/commercial-operations/tests/prompt26_commercial.rs"
+evidence = "docs/ddd/contexts/commercial-operations.md"
+
+[[invariant]]
+id = "CO-INV-006"
+context = "commercial-operations"
+code = "crates/commercial-operations/src/lib.rs"
+test = "crates/commercial-operations/tests/prompt26_commercial.rs"
+evidence = "docs/ddd/contexts/commercial-operations.md"
+
+[[invariant]]
+id = "FO-INV-001"
+context = "fleet-operations"
+code = "crates/fleet-operations/src/lib.rs"
+test = "crates/fleet-operations/tests/prompt10_fleet.rs"
+evidence = "docs/ddd/contexts/fleet-operations.md"
+
+[[invariant]]
+id = "FO-INV-002"
+context = "fleet-operations"
+code = "crates/fleet-operations/src/lib.rs"
+test = "crates/fleet-operations/tests/prompt10_fleet.rs"
+evidence = "docs/ddd/contexts/fleet-operations.md"
+
+[[invariant]]
+id = "FO-INV-003"
+context = "fleet-operations"
+code = "crates/fleet-operations/src/lib.rs"
+test = "crates/fleet-operations/tests/prompt10_fleet.rs"
+evidence = "docs/ddd/contexts/fleet-operations.md"
+
+[[invariant]]
+id = "FO-INV-004"
+context = "fleet-operations"
+code = "crates/fleet-operations/src/lib.rs"
+test = "crates/fleet-operations/tests/prompt10_fleet.rs"
+evidence = "docs/ddd/contexts/fleet-operations.md"
+
+[[invariant]]
+id = "FO-INV-005"
+context = "fleet-operations"
+code = "crates/fleet-operations/src/lib.rs"
+test = "crates/fleet-operations/tests/prompt10_fleet.rs"
+evidence = "docs/ddd/contexts/fleet-operations.md"
+
+[[invariant]]
+id = "FO-INV-006"
+context = "fleet-operations"
+code = "crates/fleet-operations/src/lib.rs"
+test = "crates/fleet-operations/tests/prompt10_fleet.rs"
+evidence = "docs/ddd/contexts/fleet-operations.md"
+
+[[invariant]]
+id = "FO-INV-007"
+context = "fleet-operations"
+code = "crates/fleet-operations/src/lib.rs"
+test = "crates/fleet-operations/tests/prompt10_fleet.rs"
+evidence = "docs/ddd/contexts/fleet-operations.md"
+
+[[invariant]]
+id = "FO-INV-008"
+context = "fleet-operations"
+code = "crates/fleet-operations/src/lib.rs"
+test = "crates/fleet-operations/tests/prompt10_fleet.rs"
+evidence = "docs/ddd/contexts/fleet-operations.md"
+
+[[invariant]]
+id = "HI-INV-001"
+context = "hazard-intelligence"
+code = "crates/hazard-intelligence/src/lib.rs"
+test = "crates/hazard-intelligence/tests/prompt18_ingestion.rs"
+evidence = "docs/ddd/contexts/hazard-intelligence.md"
+
+[[invariant]]
+id = "HI-INV-002"
+context = "hazard-intelligence"
+code = "crates/hazard-intelligence/src/lib.rs"
+test = "crates/hazard-intelligence/tests/prompt18_ingestion.rs"
+evidence = "docs/ddd/contexts/hazard-intelligence.md"
+
+[[invariant]]
+id = "HI-INV-003"
+context = "hazard-intelligence"
+code = "crates/hazard-intelligence/src/lib.rs"
+test = "crates/hazard-intelligence/tests/prompt18_ingestion.rs"
+evidence = "docs/ddd/contexts/hazard-intelligence.md"
+
+[[invariant]]
+id = "HI-INV-004"
+context = "hazard-intelligence"
+code = "crates/hazard-intelligence/src/lib.rs"
+test = "crates/hazard-intelligence/tests/prompt18_ingestion.rs"
+evidence = "docs/ddd/contexts/hazard-intelligence.md"
+
+[[invariant]]
+id = "HI-INV-005"
+context = "hazard-intelligence"
+code = "crates/hazard-intelligence/src/lib.rs"
+test = "crates/hazard-intelligence/tests/prompt18_ingestion.rs"
+evidence = "docs/ddd/contexts/hazard-intelligence.md"
+
+[[invariant]]
+id = "HI-INV-006"
+context = "hazard-intelligence"
+code = "crates/hazard-intelligence/src/lib.rs"
+test = "crates/hazard-intelligence/tests/prompt18_ingestion.rs"
+evidence = "docs/ddd/contexts/hazard-intelligence.md"
+
+[[invariant]]
+id = "IA-INV-001"
+context = "identity-access"
+code = "crates/identity-access/src/lib.rs"
+test = "crates/identity-access/src/lib.rs"
+evidence = "docs/ddd/contexts/identity-access.md"
+
+[[invariant]]
+id = "IA-INV-002"
+context = "identity-access"
+code = "crates/identity-access/src/lib.rs"
+test = "crates/identity-access/src/lib.rs"
+evidence = "docs/ddd/contexts/identity-access.md"
+
+[[invariant]]
+id = "IA-INV-003"
+context = "identity-access"
+code = "crates/identity-access/src/lib.rs"
+test = "crates/identity-access/src/lib.rs"
+evidence = "docs/ddd/contexts/identity-access.md"
+
+[[invariant]]
+id = "IA-INV-004"
+context = "identity-access"
+code = "crates/identity-access/src/lib.rs"
+test = "crates/identity-access/src/lib.rs"
+evidence = "docs/ddd/contexts/identity-access.md"
+
+[[invariant]]
+id = "IA-INV-005"
+context = "identity-access"
+code = "crates/identity-access/src/lib.rs"
+test = "crates/identity-access/src/lib.rs"
+evidence = "docs/ddd/contexts/identity-access.md"
+
+[[invariant]]
+id = "IC-INV-001"
+context = "incident-command"
+code = "crates/incident-command/src/lib.rs"
+test = "crates/incident-command/tests/prompt09_authority.rs"
+evidence = "docs/ddd/contexts/incident-command.md"
+
+[[invariant]]
+id = "IC-INV-002"
+context = "incident-command"
+code = "crates/incident-command/src/lib.rs"
+test = "crates/incident-command/tests/prompt09_authority.rs"
+evidence = "docs/ddd/contexts/incident-command.md"
+
+[[invariant]]
+id = "IC-INV-003"
+context = "incident-command"
+code = "crates/incident-command/src/lib.rs"
+test = "crates/incident-command/tests/prompt09_authority.rs"
+evidence = "docs/ddd/contexts/incident-command.md"
+
+[[invariant]]
+id = "IC-INV-004"
+context = "incident-command"
+code = "crates/incident-command/src/lib.rs"
+test = "crates/incident-command/tests/prompt09_authority.rs"
+evidence = "docs/ddd/contexts/incident-command.md"
+
+[[invariant]]
+id = "IC-INV-005"
+context = "incident-command"
+code = "crates/incident-command/src/lib.rs"
+test = "crates/incident-command/tests/prompt09_authority.rs"
+evidence = "docs/ddd/contexts/incident-command.md"
+
+[[invariant]]
+id = "LO-INV-001"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-002"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-003"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-004"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-005"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-006"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-007"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-008"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-009"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-010"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-011"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "LO-INV-012"
+context = "logistics"
+code = "crates/logistics/src/lib.rs"
+test = "crates/logistics/tests/prompt14_logistics.rs"
+evidence = "docs/ddd/contexts/logistics.md"
+
+[[invariant]]
+id = "MC-INV-001"
+context = "mission-control"
+code = "crates/mission-control/src/lib.rs"
+test = "crates/mission-control/tests/prompt13_mission.rs"
+evidence = "docs/ddd/contexts/mission-control.md"
+
+[[invariant]]
+id = "MC-INV-002"
+context = "mission-control"
+code = "crates/mission-control/src/lib.rs"
+test = "crates/mission-control/tests/prompt13_mission.rs"
+evidence = "docs/ddd/contexts/mission-control.md"
+
+[[invariant]]
+id = "MC-INV-003"
+context = "mission-control"
+code = "crates/mission-control/src/lib.rs"
+test = "crates/mission-control/tests/prompt13_mission.rs"
+evidence = "docs/ddd/contexts/mission-control.md"
+
+[[invariant]]
+id = "MC-INV-004"
+context = "mission-control"
+code = "crates/mission-control/src/lib.rs"
+test = "crates/mission-control/tests/prompt13_mission.rs"
+evidence = "docs/ddd/contexts/mission-control.md"
+
+[[invariant]]
+id = "MC-INV-005"
+context = "mission-control"
+code = "crates/mission-control/src/lib.rs"
+test = "crates/mission-control/tests/prompt13_mission.rs"
+evidence = "docs/ddd/contexts/mission-control.md"
+
+[[invariant]]
+id = "MC-INV-006"
+context = "mission-control"
+code = "crates/mission-control/src/lib.rs"
+test = "crates/mission-control/tests/prompt13_mission.rs"
+evidence = "docs/ddd/contexts/mission-control.md"
+
+[[invariant]]
+id = "MC-INV-007"
+context = "mission-control"
+code = "crates/mission-control/src/lib.rs"
+test = "crates/mission-control/tests/prompt13_mission.rs"
+evidence = "docs/ddd/contexts/mission-control.md"
+
+[[invariant]]
+id = "PP-INV-001"
+context = "predictive-planning"
+code = "crates/predictive-planning/src/lib.rs"
+test = "crates/predictive-planning/tests/prompt19_predictive.rs"
+evidence = "docs/ddd/contexts/predictive-planning.md"
+
+[[invariant]]
+id = "PP-INV-002"
+context = "predictive-planning"
+code = "crates/predictive-planning/src/lib.rs"
+test = "crates/predictive-planning/tests/prompt19_predictive.rs"
+evidence = "docs/ddd/contexts/predictive-planning.md"
+
+[[invariant]]
+id = "PP-INV-003"
+context = "predictive-planning"
+code = "crates/predictive-planning/src/lib.rs"
+test = "crates/predictive-planning/tests/prompt19_predictive.rs"
+evidence = "docs/ddd/contexts/predictive-planning.md"
+
+[[invariant]]
+id = "PP-INV-004"
+context = "predictive-planning"
+code = "crates/predictive-planning/src/lib.rs"
+test = "crates/predictive-planning/tests/prompt19_predictive.rs"
+evidence = "docs/ddd/contexts/predictive-planning.md"
+
+[[invariant]]
+id = "PP-INV-005"
+context = "predictive-planning"
+code = "crates/predictive-planning/src/lib.rs"
+test = "crates/predictive-planning/tests/prompt19_predictive.rs"
+evidence = "docs/ddd/contexts/predictive-planning.md"
+
+[[invariant]]
+id = "PP-INV-006"
+context = "predictive-planning"
+code = "crates/predictive-planning/src/lib.rs"
+test = "crates/predictive-planning/tests/prompt19_predictive.rs"
+evidence = "docs/ddd/contexts/predictive-planning.md"
+
+[[invariant]]
+id = "PP-INV-007"
+context = "predictive-planning"
+code = "crates/predictive-planning/src/lib.rs"
+test = "crates/predictive-planning/tests/prompt19_predictive.rs"
+evidence = "docs/ddd/contexts/predictive-planning.md"
+
+[[invariant]]
+id = "PP-INV-008"
+context = "predictive-planning"
+code = "crates/predictive-planning/src/lib.rs"
+test = "crates/predictive-planning/tests/prompt19_predictive.rs"
+evidence = "docs/ddd/contexts/predictive-planning.md"
+
+[[invariant]]
+id = "RC-INV-001"
+context = "robot-care-recovery"
+code = "crates/robot-care-recovery/src/lib.rs"
+test = "crates/robot-care-recovery/tests/prompt17_care.rs"
+evidence = "docs/ddd/contexts/robot-care-recovery.md"
+
+[[invariant]]
+id = "RC-INV-002"
+context = "robot-care-recovery"
+code = "crates/robot-care-recovery/src/lib.rs"
+test = "crates/robot-care-recovery/tests/prompt17_care.rs"
+evidence = "docs/ddd/contexts/robot-care-recovery.md"
+
+[[invariant]]
+id = "RC-INV-003"
+context = "robot-care-recovery"
+code = "crates/robot-care-recovery/src/lib.rs"
+test = "crates/robot-care-recovery/tests/prompt17_care.rs"
+evidence = "docs/ddd/contexts/robot-care-recovery.md"
+
+[[invariant]]
+id = "RC-INV-004"
+context = "robot-care-recovery"
+code = "crates/robot-care-recovery/src/lib.rs"
+test = "crates/robot-care-recovery/tests/prompt17_care.rs"
+evidence = "docs/ddd/contexts/robot-care-recovery.md"
+
+[[invariant]]
+id = "RC-INV-005"
+context = "robot-care-recovery"
+code = "crates/robot-care-recovery/src/lib.rs"
+test = "crates/robot-care-recovery/tests/prompt17_care.rs"
+evidence = "docs/ddd/contexts/robot-care-recovery.md"
+
+[[invariant]]
+id = "RC-INV-006"
+context = "robot-care-recovery"
+code = "crates/robot-care-recovery/src/lib.rs"
+test = "crates/robot-care-recovery/tests/prompt17_care.rs"
+evidence = "docs/ddd/contexts/robot-care-recovery.md"
+
+[[invariant]]
+id = "RC-INV-007"
+context = "robot-care-recovery"
+code = "crates/robot-care-recovery/src/lib.rs"
+test = "crates/robot-care-recovery/tests/prompt17_care.rs"
+evidence = "docs/ddd/contexts/robot-care-recovery.md"
+
+[[invariant]]
+id = "RC-INV-008"
+context = "robot-care-recovery"
+code = "crates/robot-care-recovery/src/lib.rs"
+test = "crates/robot-care-recovery/tests/prompt17_care.rs"
+evidence = "docs/ddd/contexts/robot-care-recovery.md"
+
+[[invariant]]
+id = "SA-INV-001"
+context = "safety-assurance"
+code = "crates/safety-assurance/src/lib.rs"
+test = "crates/safety-assurance/tests/prompt08_invariants.rs"
+evidence = "docs/ddd/contexts/safety-assurance.md"
+
+[[invariant]]
+id = "SA-INV-002"
+context = "safety-assurance"
+code = "crates/safety-assurance/src/lib.rs"
+test = "crates/safety-assurance/tests/prompt08_invariants.rs"
+evidence = "docs/ddd/contexts/safety-assurance.md"
+
+[[invariant]]
+id = "SA-INV-003"
+context = "safety-assurance"
+code = "crates/safety-assurance/src/lib.rs"
+test = "crates/safety-assurance/tests/prompt08_invariants.rs"
+evidence = "docs/ddd/contexts/safety-assurance.md"
+
+[[invariant]]
+id = "SA-INV-004"
+context = "safety-assurance"
+code = "crates/safety-assurance/src/lib.rs"
+test = "crates/safety-assurance/tests/prompt08_invariants.rs"
+evidence = "docs/ddd/contexts/safety-assurance.md"
+
+[[invariant]]
+id = "SA-INV-005"
+context = "safety-assurance"
+code = "crates/safety-assurance/src/lib.rs"
+test = "crates/safety-assurance/tests/prompt08_invariants.rs"
+evidence = "docs/ddd/contexts/safety-assurance.md"
+
+[[invariant]]
+id = "SO-INV-001"
+context = "station-operations"
+code = "crates/station-operations/src/lib.rs"
+test = "crates/station-operations/tests/prompt11_edge.rs"
+evidence = "docs/ddd/contexts/station-operations.md"
+
+[[invariant]]
+id = "SO-INV-002"
+context = "station-operations"
+code = "crates/station-operations/src/lib.rs"
+test = "crates/station-operations/tests/prompt11_edge.rs"
+evidence = "docs/ddd/contexts/station-operations.md"
+
+[[invariant]]
+id = "SO-INV-003"
+context = "station-operations"
+code = "crates/station-operations/src/lib.rs"
+test = "crates/station-operations/tests/prompt11_edge.rs"
+evidence = "docs/ddd/contexts/station-operations.md"
+
+[[invariant]]
+id = "SO-INV-004"
+context = "station-operations"
+code = "crates/station-operations/src/lib.rs"
+test = "crates/station-operations/tests/prompt11_edge.rs"
+evidence = "docs/ddd/contexts/station-operations.md"
+
+[[invariant]]
+id = "SO-INV-005"
+context = "station-operations"
+code = "crates/station-operations/src/lib.rs"
+test = "crates/station-operations/tests/prompt11_edge.rs"
+evidence = "docs/ddd/contexts/station-operations.md"
+
+[[invariant]]
+id = "SO-INV-006"
+context = "station-operations"
+code = "crates/station-operations/src/lib.rs"
+test = "crates/station-operations/tests/prompt11_edge.rs"
+evidence = "docs/ddd/contexts/station-operations.md"
+
+[[invariant]]
+id = "SO-INV-007"
+context = "station-operations"
+code = "crates/station-operations/src/lib.rs"
+test = "crates/station-operations/tests/prompt11_edge.rs"
+evidence = "docs/ddd/contexts/station-operations.md"
+
+[[invariant]]
+id = "SO-INV-008"
+context = "station-operations"
+code = "crates/station-operations/src/lib.rs"
+test = "crates/station-operations/tests/prompt11_edge.rs"
+evidence = "docs/ddd/contexts/station-operations.md"
+
+[[invariant]]
+id = "SO-INV-009"
+context = "station-operations"
+code = "crates/station-operations/src/lib.rs"
+test = "crates/station-operations/tests/prompt11_edge.rs"
+evidence = "docs/ddd/contexts/station-operations.md"
+
+[[invariant]]
+id = "SO-INV-010"
+context = "station-operations"
+code = "crates/station-operations/src/lib.rs"
+test = "crates/station-operations/tests/prompt11_edge.rs"
+evidence = "docs/ddd/contexts/station-operations.md"
+
+[[invariant]]
+id = "SU-INV-001"
+context = "suppression-operations"
+code = "crates/suppression-operations/src/lib.rs"
+test = "crates/suppression-operations/tests/prompt24_actuation.rs"
+evidence = "docs/ddd/contexts/suppression-operations.md"
+
+[[invariant]]
+id = "SU-INV-002"
+context = "suppression-operations"
+code = "crates/suppression-operations/src/lib.rs"
+test = "crates/suppression-operations/tests/prompt24_actuation.rs"
+evidence = "docs/ddd/contexts/suppression-operations.md"
+
+[[invariant]]
+id = "SU-INV-003"
+context = "suppression-operations"
+code = "crates/suppression-operations/src/lib.rs"
+test = "crates/suppression-operations/tests/prompt24_actuation.rs"
+evidence = "docs/ddd/contexts/suppression-operations.md"
+
+[[invariant]]
+id = "SU-INV-004"
+context = "suppression-operations"
+code = "crates/suppression-operations/src/lib.rs"
+test = "crates/suppression-operations/tests/prompt24_actuation.rs"
+evidence = "docs/ddd/contexts/suppression-operations.md"
+
+[[invariant]]
+id = "SU-INV-005"
+context = "suppression-operations"
+code = "crates/suppression-operations/src/lib.rs"
+test = "crates/suppression-operations/tests/prompt24_actuation.rs"
+evidence = "docs/ddd/contexts/suppression-operations.md"
+
+[[invariant]]
+id = "VM-INV-001"
+context = "vegetation-management"
+code = "crates/vegetation-management/src/lib.rs"
+test = "crates/vegetation-management/tests/prompt23_workflow.rs"
+evidence = "docs/ddd/contexts/vegetation-management.md"
+
+[[invariant]]
+id = "VM-INV-002"
+context = "vegetation-management"
+code = "crates/vegetation-management/src/lib.rs"
+test = "crates/vegetation-management/tests/prompt23_workflow.rs"
+evidence = "docs/ddd/contexts/vegetation-management.md"
+
+[[invariant]]
+id = "VM-INV-003"
+context = "vegetation-management"
+code = "crates/vegetation-management/src/lib.rs"
+test = "crates/vegetation-management/tests/prompt23_workflow.rs"
+evidence = "docs/ddd/contexts/vegetation-management.md"
+
+[[invariant]]
+id = "VM-INV-004"
+context = "vegetation-management"
+code = "crates/vegetation-management/src/lib.rs"
+test = "crates/vegetation-management/tests/prompt23_workflow.rs"
+evidence = "docs/ddd/contexts/vegetation-management.md"
+
+[[invariant]]
+id = "VM-INV-005"
+context = "vegetation-management"
+code = "crates/vegetation-management/src/lib.rs"
+test = "crates/vegetation-management/tests/prompt23_workflow.rs"
+evidence = "docs/ddd/contexts/vegetation-management.md"
+
+[[invariant]]
+id = "VM-INV-006"
+context = "vegetation-management"
+code = "crates/vegetation-management/src/lib.rs"
+test = "crates/vegetation-management/tests/prompt23_workflow.rs"
+evidence = "docs/ddd/contexts/vegetation-management.md"
+
+[[invariant]]
+id = "VI-INV-001"
+context = "vehicle-integration"
+code = "crates/vehicle-integration/src/lib.rs"
+test = "crates/vehicle-integration/tests/prompt12_gateway.rs"
+evidence = "docs/ddd/contexts/vehicle-integration.md"
+
+[[invariant]]
+id = "VI-INV-002"
+context = "vehicle-integration"
+code = "crates/vehicle-integration/src/lib.rs"
+test = "crates/vehicle-integration/tests/prompt12_gateway.rs"
+evidence = "docs/ddd/contexts/vehicle-integration.md"
+
+[[invariant]]
+id = "VI-INV-003"
+context = "vehicle-integration"
+code = "crates/vehicle-integration/src/lib.rs"
+test = "crates/vehicle-integration/tests/prompt12_gateway.rs"
+evidence = "docs/ddd/contexts/vehicle-integration.md"
+
+[[invariant]]
+id = "VI-INV-004"
+context = "vehicle-integration"
+code = "crates/vehicle-integration/src/lib.rs"
+test = "crates/vehicle-integration/tests/prompt12_gateway.rs"
+evidence = "docs/ddd/contexts/vehicle-integration.md"
+
+[[invariant]]
+id = "VI-INV-005"
+context = "vehicle-integration"
+code = "crates/vehicle-integration/src/lib.rs"
+test = "crates/vehicle-integration/tests/prompt12_gateway.rs"
+evidence = "docs/ddd/contexts/vehicle-integration.md"
+

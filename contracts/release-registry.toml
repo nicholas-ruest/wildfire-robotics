@@ -1,0 +1,147 @@
+schema_version = 1
+
+# Machine-verifiable ADR-043 coverage. Deadlines are evaluated from durable UTC
+# timestamps; monotonic elapsed time is used while a worker remains alive.
+[[process_managers]]
+name = "incident-activation"
+owner = "incident-command"
+timeout_seconds = 300
+compensation = "revoke unconsumed assignments while retaining restrictions"
+escalation = "block issuance and page incident authority"
+observable_containment = "IncidentActivationBlocked"
+
+[[process_managers]]
+name = "vehicle-enrollment-capability-promotion"
+owner = "fleet-operations"
+timeout_seconds = 3600
+compensation = "revoke trust and capability and ground vehicle"
+escalation = "open safety assurance review"
+observable_containment = "VehicleGrounded"
+
+[[process_managers]]
+name = "mission-authorization-dispatch"
+owner = "mission-control"
+timeout_seconds = 120
+compensation = "release reservations revoke reachable intents and enter minimum risk"
+escalation = "notify incident command and safety assurance"
+observable_containment = "MissionDispatchInhibited"
+
+[[process_managers]]
+name = "edge-deployment-synchronization"
+owner = "station-operations"
+timeout_seconds = 900
+compensation = "rollback compatible software retain stricter policy and quarantine conflicts"
+escalation = "page station operations owner"
+observable_containment = "EdgeDeploymentRolledBack"
+
+[[process_managers]]
+name = "hazard-ingestion-forecast-publication"
+owner = "predictive-planning"
+timeout_seconds = 900
+compensation = "quarantine invalid inputs and explicitly supersede advisory"
+escalation = "notify model and data stewards"
+observable_containment = "ForecastWithheld"
+
+[[process_managers]]
+name = "logistics-delivery"
+owner = "logistics"
+timeout_seconds = 1800
+compensation = "release reservations and safe stop reroute or return load"
+escalation = "page logistics duty officer"
+observable_containment = "DeliveryContained"
+
+[[process_managers]]
+name = "suppression-operation"
+owner = "suppression-operations"
+timeout_seconds = 30
+compensation = "inhibit and disarm then withdraw or secure agent"
+escalation = "notify incident command and independent safety authority"
+observable_containment = "SuppressionInhibited"
+
+[[process_managers]]
+name = "release-promotion"
+owner = "safety-assurance"
+timeout_seconds = 3600
+compensation = "halt rollout revoke promotion rollback compatible artifacts and ground capability"
+escalation = "convene independent release review"
+observable_containment = "PromotionRevoked"
+
+[[process_managers]]
+name = "tenant-onboarding-offboarding"
+owner = "commercial-operations"
+timeout_seconds = 86400
+compensation = "disable incomplete tenant and destroy unneeded provisional resources"
+escalation = "open privacy legal and security review"
+observable_containment = "TenantActivationBlocked"
+
+[[process_managers]]
+name = "usage-rating-invoicing"
+owner = "commercial-operations"
+timeout_seconds = 86400
+compensation = "post adjustment or credit without rewriting ledger facts"
+escalation = "open metering exception case"
+observable_containment = "InvoiceHeld"
+
+[[process_managers]]
+name = "lightning-reconnaissance-learning"
+owner = "predictive-planning"
+timeout_seconds = 3600
+compensation = "supersede products quarantine suspect labels and withdraw recommendations"
+escalation = "page data model and mission owners"
+observable_containment = "LearningPromotionWithheld"
+
+[[process_managers]]
+name = "fleet-cell-adaptive-collaboration"
+owner = "fleet-operations"
+timeout_seconds = 300
+compensation = "revoke advisory profile restore conventional allocator and fence new epoch"
+escalation = "page fleet operations and mission control"
+observable_containment = "ConventionalAllocationRestored"
+
+[[process_managers]]
+name = "vegetation-treatment-program"
+owner = "vegetation-management"
+timeout_seconds = 900
+compensation = "release reservations inhibit tools and preserve planned versus actual evidence"
+escalation = "page prescription authority"
+observable_containment = "TreatmentWorkInhibited"
+
+[[process_managers]]
+name = "supply-planning-replenishment"
+owner = "logistics"
+timeout_seconds = 1800
+compensation = "release reservations cancel uncommitted orders and reroute safely"
+escalation = "page supply duty officer"
+observable_containment = "SupplyPlanDegraded"
+
+[[process_managers]]
+name = "habitat-energy-fleet-charging"
+owner = "station-operations"
+timeout_seconds = 60
+compensation = "stop charge isolate fault preserve reserve and start fallback generation"
+escalation = "page station energy safety owner"
+observable_containment = "ChargingContained"
+
+[[process_managers]]
+name = "mass-robot-mobilization"
+owner = "logistics"
+timeout_seconds = 600
+compensation = "hold waves release reservations divert or return pods and restore custody"
+escalation = "page mobilization command"
+observable_containment = "MobilizationWaveHeld"
+
+[[process_managers]]
+name = "robot-maintenance-field-recovery"
+owner = "robot-care-recovery"
+timeout_seconds = 300
+compensation = "abort medic isolate robot divert quarantine and reverse reservations"
+escalation = "page rescue safety and custody owners"
+observable_containment = "RecoveryMinimumRiskEntered"
+
+[[process_managers]]
+name = "aerial-fire-blanket-qualification-deployment"
+owner = "aerial-deployment-operations"
+timeout_seconds = 30
+compensation = "retain before release or isolate vent divert and recover after extraction"
+escalation = "page aircraft incident and independent safety authorities"
+observable_containment = "AerialDeploymentContained"

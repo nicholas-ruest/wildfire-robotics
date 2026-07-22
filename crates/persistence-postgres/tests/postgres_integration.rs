@@ -1,5 +1,6 @@
 //! `PostgreSQL` integration tests. Set `TEST_DATABASE_URL` to run locally or in CI.
-//! A missing database is reported as a skip so developer machines do not require Docker.
+//! A missing database is reported as a skip so developer machines do not require Docker,
+//! unless `REQUIRE_INTEGRATION_TESTS=true` makes container execution a release gate.
 
 use chrono::{Duration, Utc};
 use serde_json::json;
@@ -67,6 +68,12 @@ async fn test_pool() -> Result<Option<TestDatabase>, Box<dyn std::error::Error>>
     let container = match Postgres::default().start().await {
         Ok(container) => container,
         Err(error) => {
+            if std::env::var("REQUIRE_INTEGRATION_TESTS").as_deref() == Ok("true") {
+                return Err(format!(
+                    "PostgreSQL integration tests are required but Docker is unavailable: {error}"
+                )
+                .into());
+            }
             eprintln!("skipped PostgreSQL integration test: Docker unavailable: {error}");
             return Ok(None);
         }

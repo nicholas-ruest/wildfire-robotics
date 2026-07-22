@@ -1,0 +1,23 @@
+schema_version = 1
+
+[[risk]]
+id = "RISK-FIELD-EVIDENCE-001"
+owner = "safety-assurance"
+expires = "2027-01-22"
+disposition = "Software RC only; controlled field promotion remains prohibited until the evidence-boundary gates are independently satisfied."
+release_blocking = false
+
+[[risk]]
+id = "RISK-AUTHORITY-001"
+owner = "regulatory-compliance"
+expires = "2027-01-22"
+disposition = "Operational and aviation authority approvals are external prerequisites and are not represented as software evidence."
+release_blocking = false
+
+[[risk]]
+id = "RISK-HARDWARE-001"
+owner = "aerial-deployment-operations"
+expires = "2027-01-22"
+disposition = "Aircraft, payload, material and environmental qualification remain bounded external work; all physical release paths remain inhibited."
+release_blocking = false
+

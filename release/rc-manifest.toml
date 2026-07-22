@@ -1,0 +1,10 @@
+schema_version = 1
+release_id = "WR-RC-2026-07-22"
+status = "software-release-candidate"
+production_ready = false
+field_ready = false
+known_release_blockers = 0
+evidence_boundary = "release/field-evidence-status.toml"
+risk_register = "release/unresolved-risks.toml"
+architecture_deviations = "release/architecture-deviations.toml"
+

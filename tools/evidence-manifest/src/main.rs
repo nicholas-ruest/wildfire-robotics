@@ -61,6 +61,116 @@ const STEPS: &[(&str, &[&str])] = &[
         "migrations",
         &["cargo", "run", "--locked", "-p", "migration-check", "--"],
     ),
+    (
+        "typescript-clients",
+        &["bash", "scripts/validate-typescript.sh"],
+    ),
+    ("deployment-recovery", &["bash", "deploy/tests/validate.sh"]),
+    (
+        "release-gate",
+        &["cargo", "run", "--locked", "-p", "release-gate", "--", "."],
+    ),
+    (
+        "prompt29-scenarios",
+        &[
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "digital-twin",
+            "--test",
+            "prompt29",
+        ],
+    ),
+    (
+        "privacy",
+        &[
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "commercial-operations",
+            "--test",
+            "prompt26_commercial",
+            "consent",
+        ],
+    ),
+    (
+        "replay",
+        &[
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "digital-twin",
+            "--test",
+            "prompt29",
+            "replay_identically",
+        ],
+    ),
+    (
+        "recovery",
+        &[
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "infrastructure-recovery",
+            "--test",
+            "recovery",
+        ],
+    ),
+    (
+        "chaos",
+        &[
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "digital-twin",
+            "--test",
+            "prompt29",
+            "minimum_risk_for_every_named_fault",
+        ],
+    ),
+    (
+        "endurance",
+        &[
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "scale-qualification",
+            "--test",
+            "qualification",
+            "exercise_every_registered_asset",
+        ],
+    ),
+    (
+        "performance",
+        &[
+            "cargo",
+            "run",
+            "--locked",
+            "--release",
+            "-p",
+            "scale-qualification",
+        ],
+    ),
+    (
+        "prompt30-full-million",
+        &[
+            "cargo",
+            "test",
+            "--locked",
+            "--release",
+            "-p",
+            "scale-qualification",
+            "--test",
+            "qualification",
+            "measure_all_required_operational_paths",
+        ],
+    ),
     ("licenses", &["cargo", "deny", "check"]),
     (
         "advisories",
@@ -268,6 +378,15 @@ fn build_manifest(
         &root.join("target/evidence/sbom"),
         &mut artifact_paths,
     );
+    for path in [
+        "contracts/release-registry.toml",
+        "docs/operations/release-candidate.md",
+        "docs/operations/slo-capacity-report.md",
+        "docs/operations/unresolved-risk-register.md",
+    ] {
+        artifact_paths.push(path.to_owned());
+    }
+    collect_files(root, &root.join("release"), &mut artifact_paths);
     let artifacts = artifact_paths
         .into_iter()
         .filter(|path| root.join(path).is_file())
@@ -280,14 +399,14 @@ fn build_manifest(
         })
         .collect::<Result<Vec<_>, String>>()?;
     let tools = tool_evidence(root, versions);
-    let overall_success =
-        steps.iter().all(|step| step.success) && tools.iter().all(|tool| tool.verified);
+    let source_dirty = !command_text(root, "git", &["status", "--porcelain"]).is_empty();
+    let overall_success = quality_succeeded(&steps, &tools, source_dirty);
     Ok(Manifest {
         schema_version: 1,
         generated_at_utc: Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true),
         repository: command_text(root, "git", &["config", "--get", "remote.origin.url"]),
         revision: command_text(root, "git", &["rev-parse", "HEAD"]),
-        source_dirty: !command_text(root, "git", &["status", "--porcelain"]).is_empty(),
+        source_dirty,
         rustc: command_text(root, "rustc", &["--version", "--verbose"]),
         cargo: command_text(root, "cargo", &["--version", "--verbose"]),
         cargo_lock_sha256: sha256(&root.join("Cargo.lock"))?,
@@ -297,6 +416,10 @@ fn build_manifest(
         overall_success,
         promotion_authority: false,
     })
+}
+
+fn quality_succeeded(steps: &[StepEvidence], tools: &[ToolEvidence], source_dirty: bool) -> bool {
+    !source_dirty && steps.iter().all(|step| step.success) && tools.iter().all(|tool| tool.verified)
 }
 
 fn tool_evidence(root: &Path, value: ToolVersions) -> Vec<ToolEvidence> {
@@ -408,6 +531,21 @@ mod tests {
             "build",
             "clippy",
             "test",
+            "docs",
+            "architecture",
+            "contracts",
+            "migrations",
+            "typescript-clients",
+            "deployment-recovery",
+            "release-gate",
+            "prompt29-scenarios",
+            "privacy",
+            "replay",
+            "recovery",
+            "chaos",
+            "endurance",
+            "performance",
+            "prompt30-full-million",
             "licenses",
             "advisories",
             "secrets",
@@ -420,10 +558,29 @@ mod tests {
     }
 
     #[test]
+    fn integrated_gates_use_reviewed_fail_closed_entrypoints() -> Result<(), &'static str> {
+        for required in ["typescript-clients", "deployment-recovery"] {
+            let (_, command) = STEPS
+                .iter()
+                .find(|(name, _)| *name == required)
+                .ok_or("required integrated gate")?;
+            assert_eq!(command.first(), Some(&"bash"));
+            assert_eq!(command.len(), 2);
+        }
+        Ok(())
+    }
+
+    #[test]
     fn tool_versions_are_pinned() -> Result<(), String> {
         let versions = read_versions(&workspace_root())?;
         assert!(!versions.rust.contains('*'));
         assert!(!versions.cargo_nextest.contains('*'));
         Ok(())
+    }
+
+    #[test]
+    fn dirty_source_can_never_produce_successful_release_evidence() {
+        assert!(!quality_succeeded(&[], &[], true));
+        assert!(quality_succeeded(&[], &[], false));
     }
 }

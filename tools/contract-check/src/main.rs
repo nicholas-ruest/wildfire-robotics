@@ -35,6 +35,22 @@ struct Contract {
     failure_policy: String,
 }
 
+#[derive(Deserialize)]
+struct ReleaseRegistry {
+    schema_version: u32,
+    process_managers: Vec<ProcessManager>,
+}
+
+#[derive(Deserialize)]
+struct ProcessManager {
+    name: String,
+    owner: String,
+    timeout_seconds: u64,
+    compensation: String,
+    escalation: String,
+    observable_containment: String,
+}
+
 fn message_names(prefix: &str, messages: &[DescriptorProto], output: &mut BTreeSet<String>) {
     for message in messages {
         if let Some(name) = &message.name {
@@ -165,6 +181,19 @@ fn validate(
         {
             return Err(format!("incomplete registry metadata for {}", contract.name).into());
         }
+        if contract
+            .authorized_consumers
+            .iter()
+            .any(|consumer| consumer.trim().is_empty())
+            || contract
+                .authorized_consumers
+                .iter()
+                .collect::<BTreeSet<_>>()
+                .len()
+                != contract.authorized_consumers.len()
+        {
+            return Err(format!("invalid consumer compatibility for {}", contract.name).into());
+        }
         if !descriptor_messages.contains(&format!("wildfire.v1.{}", contract.name)) {
             return Err(format!("registry contract {} has no descriptor", contract.name).into());
         }
@@ -202,13 +231,77 @@ fn validate(
     Ok(())
 }
 
+fn validate_release_registry(registry: &ReleaseRegistry) -> Result<(), Box<dyn std::error::Error>> {
+    const EXPECTED_PROCESS_MANAGERS: usize = 18;
+    if registry.schema_version != 1 || registry.process_managers.len() != EXPECTED_PROCESS_MANAGERS
+    {
+        return Err(format!(
+            "release registry must contain exactly {EXPECTED_PROCESS_MANAGERS} version-1 process managers"
+        )
+        .into());
+    }
+    let mut names = BTreeSet::new();
+    for manager in &registry.process_managers {
+        if !names.insert(manager.name.as_str())
+            || manager.owner.trim().is_empty()
+            || manager.timeout_seconds == 0
+            || manager.compensation.trim().is_empty()
+            || manager.escalation.trim().is_empty()
+            || manager.observable_containment.trim().is_empty()
+        {
+            return Err(format!("incomplete process-manager policy for {}", manager.name).into());
+        }
+    }
+    println!(
+        "validated {} process-manager timeout, compensation, escalation, and containment policies",
+        names.len()
+    );
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
     let registry: Registry =
         toml::from_str(&fs::read_to_string(root.join("contracts/registry.toml"))?)?;
+    let release_registry: ReleaseRegistry = toml::from_str(&fs::read_to_string(
+        root.join("contracts/release-registry.toml"),
+    )?)?;
     let descriptors = FileDescriptorSet::decode(FILE_DESCRIPTOR_SET)?;
     if env::args().any(|argument| argument == "--update") {
         write_fixtures(&root, &registry)?;
     }
-    validate(&root, &registry, &descriptors)
+    validate(&root, &registry, &descriptors)?;
+    validate_release_registry(&release_registry)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn registry() -> ReleaseRegistry {
+        toml::from_str(include_str!("../../../contracts/release-registry.toml"))
+            .unwrap_or_else(|error| unreachable!("checked-in release registry parses: {error}"))
+    }
+
+    #[test]
+    fn checked_in_process_managers_have_all_failure_controls() {
+        validate_release_registry(&registry())
+            .unwrap_or_else(|error| unreachable!("release registry validates: {error}"));
+    }
+
+    #[test]
+    fn missing_timeout_compensation_escalation_or_observation_fails_closed() {
+        let mut value = registry();
+        value.process_managers[0].timeout_seconds = 0;
+        assert!(validate_release_registry(&value).is_err());
+        let mut value = registry();
+        value.process_managers[0].compensation.clear();
+        assert!(validate_release_registry(&value).is_err());
+        let mut value = registry();
+        value.process_managers[0].escalation.clear();
+        assert!(validate_release_registry(&value).is_err());
+        let mut value = registry();
+        value.process_managers[0].observable_containment.clear();
+        assert!(validate_release_registry(&value).is_err());
+    }
 }

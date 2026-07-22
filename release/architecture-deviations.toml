@@ -1,0 +1,4 @@
+schema_version = 1
+# No architecture deviations are approved or requested for this release candidate.
+# Any future entry must include id, status="approved", approval evidence and expiry.
+

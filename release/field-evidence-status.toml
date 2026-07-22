@@ -1,0 +1,42 @@
+schema_version = 1
+software_release_label = "software-release-candidate"
+production_claim_allowed = false
+field_claim_allowed = false
+
+[[gate]]
+id = "EXT-HITL-001"
+status = "outstanding"
+owner = "independent-verification"
+evidence = "Signed HITL results for exact promoted hardware/software/configuration and ODD"
+blocks = "both"
+[[gate]]
+id = "EXT-FIELD-001"
+status = "outstanding"
+owner = "safety-assurance"
+evidence = "Approved controlled-field campaign with trained staff, exclusions, abort controls and occurrence review"
+blocks = "both"
+[[gate]]
+id = "EXT-AIRWORTHINESS-001"
+status = "outstanding"
+owner = "aircraft-authority"
+evidence = "Aircraft-specific loading, restraint, extraction and certified release-envelope approval"
+blocks = "both"
+[[gate]]
+id = "EXT-MATERIAL-001"
+status = "outstanding"
+owner = "materials-assurance"
+evidence = "Coupon through full-panel thermal, mechanical, environmental, toxicity and disposal qualification"
+blocks = "both"
+[[gate]]
+id = "EXT-REGULATORY-001"
+status = "outstanding"
+owner = "regulatory-compliance"
+evidence = "Applicable aviation, environmental, spectrum, privacy and incident-authority approvals"
+blocks = "production"
+[[gate]]
+id = "EXT-OPERATIONS-001"
+status = "outstanding"
+owner = "operations"
+evidence = "Staffed support, on-call, training, spares, maintenance and exercised production recovery"
+blocks = "production"
+

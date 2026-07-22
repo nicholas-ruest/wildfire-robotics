@@ -1,15 +1,16 @@
-name: quality
+name: release-evidence
 
 on:
-  pull_request:
+  workflow_dispatch:
   push:
     branches: [main]
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
-  verify:
+  attest-release-candidate-evidence:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -33,20 +34,34 @@ jobs:
       - uses: taiki-e/install-action@13608cbb45b01feb47ef444ab1a42dc41ad56f1a # v2.79.11
         with:
           tool: cargo-nextest@0.9.140,cargo-deny@0.20.2,cargo-audit@0.22.2,cargo-llvm-cov@0.8.7,cargo-cyclonedx@0.5.9
-      - name: Install pinned non-Cargo scanners
+      - name: Install pinned scanners
         run: |
           pipx install semgrep==1.170.0
           curl --fail --location --silent --show-error https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz -o /tmp/gitleaks.tar.gz
           echo "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb  /tmp/gitleaks.tar.gz" | sha256sum --check
           tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
           sudo install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
-      - name: Run reproducible quality gate
+      - uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # v3.9.2
+      - name: Generate exact clean-tree evidence
         run: cargo quality
-      - name: Upload attributable evidence
-        if: always()
+      - name: Create deterministic evidence bundle
+        run: tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -czf release-evidence.tgz target/evidence
+      - name: Keyless sign and verify evidence bundle
+        env:
+          COSIGN_YES: "true"
+        run: |
+          cosign sign-blob --bundle release-evidence.sigstore.json release-evidence.tgz
+          cosign verify-blob \
+            --bundle release-evidence.sigstore.json \
+            --certificate-identity "https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release-evidence.yml@refs/heads/main" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            release-evidence.tgz
+      - name: Upload signed evidence without publishing a release
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: quality-evidence
-          path: target/evidence
+          name: signed-release-candidate-evidence
+          path: |
+            release-evidence.tgz
+            release-evidence.sigstore.json
           if-no-files-found: error
           retention-days: 30

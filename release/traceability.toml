@@ -1,0 +1,80 @@
+schema_version = 1
+release_id = "WR-RC-2026-07-22"
+invariant_registry = "release/invariant-traceability.toml"
+process_registry = "contracts/release-registry.toml"
+
+[expected]
+adrs = 74
+contexts = 15
+invariants = 107
+contracts = 49
+process_managers = 18
+
+[[required_artifact]]
+id = "ARCH-OWNERSHIP"
+kind = "architecture"
+path = "docs/architecture/context-ownership.toml"
+[[required_artifact]]
+id = "ARCH-DECISIONS"
+kind = "architecture"
+path = "docs/adr/README.md"
+[[required_artifact]]
+id = "DDD-CONTEXTS"
+kind = "domain"
+path = "docs/ddd/context-catalog.md"
+[[required_artifact]]
+id = "DDD-CONTRACTS"
+kind = "contract"
+path = "docs/ddd/integration-contracts.md"
+[[required_artifact]]
+id = "DDD-PROCESSES"
+kind = "process-manager"
+path = "docs/ddd/process-managers.md"
+[[required_artifact]]
+id = "DDD-TRACEABILITY"
+kind = "assurance"
+path = "docs/ddd/traceability-model.md"
+[[required_artifact]]
+id = "CONTRACT-REGISTRY"
+kind = "contract"
+path = "contracts/registry.toml"
+[[required_artifact]]
+id = "PRODUCTION-STANDARD"
+kind = "release-policy"
+path = "docs/operations/production-readiness.md"
+[[required_artifact]]
+id = "DEPLOYMENT-MANIFEST"
+kind = "configuration"
+path = "deploy/kubernetes/overlays/production-ca/kustomization.yaml"
+[[required_artifact]]
+id = "RECOVERY-EVIDENCE"
+kind = "recovery"
+path = "deploy/tests/recovery-exercise.local-simulated.json"
+[[required_artifact]]
+id = "SCALE-REPORT"
+kind = "capacity"
+path = "docs/benchmarks/prompt30-scale-qualification.json"
+[[required_artifact]]
+id = "DIGITAL-TWIN-REPORT"
+kind = "scenario"
+path = "docs/testing/prompt-29-digital-twin.md"
+[[required_artifact]]
+id = "RC-RISK-REGISTER"
+kind = "risk"
+path = "release/unresolved-risks.toml"
+[[required_artifact]]
+id = "RC-EVIDENCE-BOUNDARY"
+kind = "assurance"
+path = "release/field-evidence-status.toml"
+[[required_artifact]]
+id = "RC-SLO-CAPACITY"
+kind = "operations"
+path = "docs/operations/slo-capacity-report.md"
+[[required_artifact]]
+id = "RC-INVARIANT-MATRIX"
+kind = "traceability"
+path = "release/invariant-traceability.toml"
+[[required_artifact]]
+id = "RC-PROCESS-REGISTRY"
+kind = "process-manager"
+path = "contracts/release-registry.toml"

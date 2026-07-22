@@ -4,8 +4,19 @@ set -euo pipefail
 repository_root="$(git rev-parse --show-toplevel)"
 destination="$repository_root/target/evidence/sbom"
 mkdir -p "$destination"
+find "$destination" -maxdepth 1 -type f -name '*.cdx.json' -delete
 manifests_file="$destination/manifests.txt"
-find "$repository_root/crates" "$repository_root/tools" -mindepth 2 -maxdepth 2 -name Cargo.toml -print | sort > "$manifests_file"
+fixture_sbom="$repository_root/fixtures/persistence-service/wildfire-sbom.json"
+fixture_backup="$(mktemp)"
+cp "$fixture_sbom" "$fixture_backup"
+cleanup() {
+  cp "$fixture_backup" "$fixture_sbom"
+  rm -f "$fixture_backup" "$manifests_file"
+}
+trap cleanup EXIT
+find "$repository_root/crates" "$repository_root/tools" \
+  -mindepth 2 -maxdepth 2 -name Cargo.toml -print \
+  | sort > "$manifests_file"
 
 while IFS= read -r manifest; do
   package_dir="$(dirname "$manifest")"
@@ -21,8 +32,13 @@ cargo cyclonedx \
 
 while IFS= read -r manifest; do
   package_dir="$(dirname "$manifest")"
-  package_name="$(basename "$package_dir")"
-  mv "$package_dir/wildfire-sbom.json" "$destination/$package_name.cdx.json"
+  relative_dir="${package_dir#"$repository_root"/}"
+  artifact_name="${relative_dir//\//--}"
+  mv "$package_dir/wildfire-sbom.json" "$destination/$artifact_name.cdx.json"
 done < "$manifests_file"
 
-rm -f "$manifests_file"
+for package in contracts-client api-client operator-web; do
+  node "$repository_root/scripts/npm-sbom.mjs" \
+    "$repository_root/packages/$package" \
+    > "$destination/npm-$package.cdx.json"
+done

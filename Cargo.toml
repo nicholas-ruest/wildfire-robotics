@@ -11,6 +11,7 @@ members = [
   "tools/contract-check",
   "tools/evidence-manifest",
   "tools/migration-check",
+  "tools/release-gate",
   "crates/contracts-generated",
   "crates/object-manifest",
   "crates/persistence-postgres",
