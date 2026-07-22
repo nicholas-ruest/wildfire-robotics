@@ -10,7 +10,7 @@ description = "NATS JetStream adapter for the Wildfire Robotics messaging ports"
 [dependencies]
 async-nats = { version = "0.50.0", default-features = false, features = ["jetstream", "ring", "server_2_12"] }
 futures = "0.3.31"
-messaging-core = { path = "../messaging-core" }
+messaging-core = { path = "../messaging-core", version = "0.1.0" }
 shared-kernel.workspace = true
 serde.workspace = true
 thiserror.workspace = true
@@ -21,7 +21,7 @@ workspace = true
 
 [dev-dependencies]
 chrono.workspace = true
-operations-core = { path = "../operations-core" }
+operations-core = { path = "../operations-core", version = "0.1.0" }
 testcontainers = "0.27.3"
 testcontainers-modules = { version = "0.15.0", features = ["nats"] }
 uuid.workspace = true

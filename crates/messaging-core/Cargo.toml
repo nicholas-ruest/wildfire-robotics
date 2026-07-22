@@ -9,7 +9,7 @@ description = "Broker-neutral authorized messaging, delivery, replay, and store-
 
 [dependencies]
 chrono.workspace = true
-operations-core = { path = "../operations-core" }
+operations-core = { path = "../operations-core", version = "0.1.0" }
 serde.workspace = true
 sha2.workspace = true
 shared-kernel.workspace = true
@@ -18,7 +18,7 @@ uuid.workspace = true
 
 [dev-dependencies]
 criterion = "0.5.1"
-edge-reconciliation = { path = "../edge-reconciliation" }
+edge-reconciliation = { path = "../edge-reconciliation", version = "0.1.0" }
 proptest.workspace = true
 
 [lints]
