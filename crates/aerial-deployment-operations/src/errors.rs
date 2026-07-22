@@ -67,4 +67,12 @@ pub enum DomainError {
     SafeSectorNotConfirmed,
     #[error("advisory output is malformed")]
     InvalidAdvisory,
+    #[error("the ground zone is absent or exceeds the installation's bounded limit")]
+    InvalidGroundZone,
+    #[error("ground work is inhibited by an unsafe, uncertain, or stale prerequisite")]
+    GroundWorkInhibited,
+    #[error("the sensor suite is incomplete, uncertain beyond its bound, or stale")]
+    GroundSensingInhibited,
+    #[error("the requested ground policy action is not bounded for the affected zone")]
+    GroundPolicyInhibited,
 }

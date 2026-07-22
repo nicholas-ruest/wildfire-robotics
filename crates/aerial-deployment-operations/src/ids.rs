@@ -39,6 +39,7 @@ opaque_ids!(
     ReleaseAuthorizationId,
     AirborneDeploymentId,
     GroundInstallationId,
+    GroundZoneId,
     EvidenceId,
     OddId,
     CommandId,
