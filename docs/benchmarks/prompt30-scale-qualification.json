@@ -1,0 +1,26 @@
+{
+  "schema": "wildfire.scale-qualification-benchmark.v1",
+  "date_utc": "2026-07-22",
+  "command": "cargo bench -p scale-qualification --bench million_assets -- --noplot",
+  "workload": {
+    "registered_and_connected_assets": 1000000,
+    "normalized_summaries": 1000000,
+    "reconnect_attempts": 10000000,
+    "arrival_wave": 100000
+  },
+  "criterion_time_milliseconds": { "low": 10.006, "estimate": 10.184, "high": 10.371 },
+  "release_gate_observation": {
+    "logical_latency_micros": { "p50": 49, "p95": 79, "p99": 81 },
+    "throughput_per_second": 84891495,
+    "availability_ppm": 997500,
+    "recovery_millis": 2100,
+    "headroom_percent": 99,
+    "message_lag": 0,
+    "message_loss": 0,
+    "peak_cell_saturation_percent": 80,
+    "cost_per_ready_robot_microusd": 3333333,
+    "cost_per_deployed_robot_microusd": 6666666,
+    "bottleneck": "destination inspection and energization"
+  },
+  "portability_note": "Wall-clock results describe this runner only; rerun the executable gate on target production adapters and hardware."
+}

@@ -32,6 +32,7 @@ members = [
   "crates/robot-care-recovery",
   "crates/aerial-deployment-operations",
   "crates/digital-twin",
+  "crates/scale-qualification",
   "fixtures/persistence-service",
 ]
 

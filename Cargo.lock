@@ -2660,6 +2660,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "scale-qualification"
+version = "0.1.0"
+dependencies = [
+ "criterion 0.7.0",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+]
+
+[[package]]
 name = "schannel"
 version = "0.1.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
