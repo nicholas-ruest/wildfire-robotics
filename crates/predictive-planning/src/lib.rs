@@ -5,11 +5,13 @@
 
 mod domain;
 mod lightning;
+mod outcomes;
 mod runner;
 mod scenario;
 
 pub use domain::*;
 pub use lightning::*;
+pub use outcomes::*;
 pub use runner::*;
 pub use scenario::*;
 
