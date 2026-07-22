@@ -1,0 +1,1 @@
+{"schema_version":1,"fixture":"prompt24-stop-v1","iterations":1000000,"stopped":1000000,"total_microseconds":788,"environment":"workspace release build; environment-dependent","fault_scenarios":13,"scope":"In-process deterministic control-path timing; not physical stop latency."}
