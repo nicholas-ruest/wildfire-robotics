@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="360" viewBox="0 0 1440 360" role="img" aria-labelledby="title desc">
+  <title id="title">Wildfire Robotics</title>
+  <desc id="desc">Enterprise wildfire intelligence and robotics platform connecting intelligence, command, distributed operations, and field outcomes.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07110f"/>
+      <stop offset=".55" stop-color="#10251e"/>
+      <stop offset="1" stop-color="#16110d"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#54d68c"/>
+      <stop offset=".5" stop-color="#62cbd1"/>
+      <stop offset="1" stop-color="#ff7047"/>
+    </linearGradient>
+    <radialGradient id="fire">
+      <stop stop-color="#ff9a5a" stop-opacity=".85"/>
+      <stop offset=".45" stop-color="#ff5638" stop-opacity=".38"/>
+      <stop offset="1" stop-color="#ff5638" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#8ee5b3" stroke-opacity=".045"/>
+    </pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="1440" height="360" rx="18" fill="url(#bg)"/>
+  <rect width="1440" height="360" rx="18" fill="url(#grid)"/>
+  <circle cx="1272" cy="175" r="185" fill="url(#fire)"/>
+  <path d="M0 292C180 235 298 323 449 270S742 218 917 279 1228 314 1440 229" fill="none" stroke="#789187" stroke-opacity=".18"/>
+  <path d="M0 325C183 267 301 349 466 300S755 248 932 310 1227 343 1440 272" fill="none" stroke="#789187" stroke-opacity=".12"/>
+
+  <g transform="translate(78 66)">
+    <path d="M42 0L82 16 74 76 42 96 10 76 2 16Z" fill="#17382b" stroke="#54d68c" stroke-width="2"/>
+    <path d="M42 18L58 51 47 49 57 76 27 44 39 46Z" fill="#79e4a6" filter="url(#glow)"/>
+  </g>
+  <text x="190" y="104" fill="#6fe0a0" font-family="Inter,Segoe UI,sans-serif" font-size="14" font-weight="700" letter-spacing="5">CANADA-FIRST · SAFETY-GATED</text>
+  <text x="188" y="158" fill="#f0f5f2" font-family="Inter,Segoe UI,sans-serif" font-size="48" font-weight="750" letter-spacing="2">WILDFIRE ROBOTICS</text>
+  <text x="190" y="193" fill="#9bada5" font-family="Inter,Segoe UI,sans-serif" font-size="17">Human-authorized intelligence, planning and distributed field operations</text>
+
+  <g transform="translate(190 238)" font-family="Inter,Segoe UI,sans-serif">
+    <g>
+      <rect width="196" height="58" rx="7" fill="#10251e" stroke="#315b48"/>
+      <circle cx="25" cy="29" r="6" fill="#54d68c"/>
+      <text x="43" y="25" fill="#dce7e2" font-size="11" font-weight="700">INTELLIGENCE</text>
+      <text x="43" y="42" fill="#72877e" font-size="9">Observed · forecast · provenance</text>
+    </g>
+    <path d="M207 29H249" stroke="url(#line)" stroke-width="2" stroke-dasharray="5 4"/>
+    <g transform="translate(260)">
+      <rect width="196" height="58" rx="7" fill="#112128" stroke="#38606a"/>
+      <circle cx="25" cy="29" r="6" fill="#62cbd1"/>
+      <text x="43" y="25" fill="#dce7e2" font-size="11" font-weight="700">COMMAND</text>
+      <text x="43" y="42" fill="#72877e" font-size="9">Authority · leases · bounded intent</text>
+    </g>
+    <path d="M467 29H509" stroke="url(#line)" stroke-width="2" stroke-dasharray="5 4"/>
+    <g transform="translate(520)">
+      <rect width="196" height="58" rx="7" fill="#171d1a" stroke="#4a5d54"/>
+      <circle cx="25" cy="29" r="6" fill="#b99cff"/>
+      <text x="43" y="25" fill="#dce7e2" font-size="11" font-weight="700">OPERATIONS</text>
+      <text x="43" y="42" fill="#72877e" font-size="9">Fleet · station · logistics · edge</text>
+    </g>
+    <path d="M727 29H769" stroke="url(#line)" stroke-width="2" stroke-dasharray="5 4"/>
+    <g transform="translate(780)">
+      <rect width="218" height="58" rx="7" fill="#251713" stroke="#754334"/>
+      <circle cx="25" cy="29" r="6" fill="#ff7047"/>
+      <text x="43" y="25" fill="#dce7e2" font-size="11" font-weight="700">FIELD OUTCOMES</text>
+      <text x="43" y="42" fill="#8f776f" font-size="9">Execute · observe · reconcile evidence</text>
+    </g>
+  </g>
+
+  <g transform="translate(1248 132)" fill="none" stroke="#ff7954" filter="url(#glow)">
+    <path d="M30 0C70 43 10 61 55 102 7 89-10 48 30 0Z" fill="#ff5738" fill-opacity=".2" stroke-width="2"/>
+    <path d="M30 42C50 63 24 72 43 91 17 83 10 63 30 42Z" fill="#ff9a5a" fill-opacity=".5"/>
+  </g>
+  <text x="1326" y="330" text-anchor="end" fill="#62776e" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10">RUST 2024 · CONTRACT-FIRST · EDGE-CAPABLE · EVIDENCE-DRIVEN</text>
+</svg>

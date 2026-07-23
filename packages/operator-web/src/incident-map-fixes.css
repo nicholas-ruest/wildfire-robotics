@@ -1,0 +1,20 @@
+.map-feed-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 6px;
+  padding: 24px;
+  background: radial-gradient(circle at center, #18302b, #071418 68%);
+  color: #b7c6c0;
+  text-align: center;
+}
+
+.map-feed-error b {
+  font-size: 12px;
+}
+
+.map-feed-error span {
+  color: #778c84;
+  font-size: 9px;
+}

@@ -238,7 +238,8 @@ async function render(host: HTMLElement, fires: Fire[]): Promise<void> {
     count = host.querySelector<HTMLElement>("[data-fire-count]");
   if (!mapHost || !list || !detail || !count) return;
   count.textContent = `${fires.length} active reports`;
-  detail.innerHTML='<div class="incident-select-prompt"><b>Select a fire on the map</b><p>Open its satellite image, agency report, response brief, and robot deployment routes.</p></div>';
+  detail.classList.remove("open");
+  detail.innerHTML='<div class="incident-select-prompt"><b>Select a fire to inspect</b><p>Satellite imagery, agency report, response brief, and deployment routes</p><span>MAP OR LIST →</span></div>';
   list.innerHTML = fires
     .slice(0, 30)
     .map(
@@ -336,22 +337,52 @@ export async function mountLiveFireMap(root: HTMLElement): Promise<void> {
   if (!host) return;
   const status = host.querySelector<HTMLElement>("[data-feed-status]");
   try {
-    const [eonet, cwfis] = await Promise.all([
+    const [eonetResult, cwfisResult] = await Promise.allSettled([
       fetch(FEED, { cache: "no-store" }),
       fetch(CANADA_FEED, { cache: "no-store" }),
     ]);
-    if (!eonet.ok) throw new Error(`US feed returned ${eonet.status}`);
-    if (!cwfis.ok) throw new Error(`Canada feed returned ${cwfis.status}`);
-    const body = (await eonet.json()) as { features?: Raw[] };
-    const canadian = normalizeCanada(await cwfis.text());
-    const fires = [...canadian, ...normalize(body.features ?? [])];
+    const warnings: string[] = [];
+    let canadian: Fire[] = [];
+    let us: Fire[] = [];
+    if (cwfisResult.status === "fulfilled" && cwfisResult.value.ok) {
+      canadian = normalizeCanada(await cwfisResult.value.text());
+    } else {
+      const reason =
+        cwfisResult.status === "fulfilled"
+          ? `HTTP ${cwfisResult.value.status}`
+          : "network error";
+      warnings.push(`CWFIS unavailable (${reason})`);
+    }
+    if (eonetResult.status === "fulfilled" && eonetResult.value.ok) {
+      const body = (await eonetResult.value.json()) as { features?: Raw[] };
+      us = normalize(body.features ?? []);
+    } else {
+      const reason =
+        eonetResult.status === "fulfilled"
+          ? `HTTP ${eonetResult.value.status}`
+          : "network error";
+      warnings.push(`NASA EONET unavailable (${reason})`);
+    }
+    const fires = [...canadian, ...us];
     if (!fires.length) throw new Error("no Canada/US events");
     await render(host, fires);
     if (status)
-      status.textContent = `CWFIS + NASA EONET · ${canadian.length} Canadian · synced ${new Date().toLocaleTimeString()}`;
+      status.textContent = warnings.length
+        ? `${warnings.join(" · ")} · showing ${fires.length} available reports`
+        : `CWFIS + NASA EONET · ${canadian.length} Canadian · synced ${new Date().toLocaleTimeString()}`;
   } catch (error) {
     if (status)
       status.textContent = `Live feed unavailable · ${error instanceof Error ? error.message : "network error"}`;
+    const count = host.querySelector<HTMLElement>("[data-fire-count]");
+    const list = host.querySelector<HTMLElement>("[data-fire-list]");
+    const plot = host.querySelector<HTMLElement>("[data-fire-plot]");
+    if (count) count.textContent = "0 active reports";
+    if (list)
+      list.innerHTML =
+        '<div class="feed-empty">Incident feeds are temporarily unavailable.</div>';
+    if (plot)
+      plot.innerHTML =
+        '<div class="map-feed-error"><b>Map data unavailable</b><span>Waiting for a current CWFIS or NASA EONET report.</span></div>';
     const detail = host.querySelector<HTMLElement>("[data-fire-detail]");
     if (detail)
       detail.innerHTML =
@@ -359,7 +390,7 @@ export async function mountLiveFireMap(root: HTMLElement): Promise<void> {
   }
 }
 
-type WorkspaceMap="predictive"|"mission"|"fleet"|"vehicle"|"vegetation";
+type WorkspaceMap="predictive"|"mission"|"fleet"|"vehicle"|"vegetation"|"aerial"|"hazard"|"logistics"|"recovery";
 const workspaceMaps=new Map<WorkspaceMap,Leaflet.Map>();
 let sharedFireRequest:Promise<Fire[]>|null=null;
 function loadSharedFires():Promise<Fire[]>{
@@ -372,7 +403,19 @@ function loadSharedFires():Promise<Fire[]>{
 }
 async function createWorkspaceMap(root:HTMLElement,mode:WorkspaceMap):Promise<void>{
   if(workspaceMaps.has(mode)){workspaceMaps.get(mode)?.invalidateSize();return}
-  const selector=mode==="predictive"?"[data-predictive-fire-map]":mode==="mission"?"[data-mission-fire-map]":mode==="fleet"?"[data-fleet-fire-map]":mode==="vegetation"?"[data-vegetation-work-map]":"[data-vehicle-fire-map]";
+  if(mode==="aerial"&&!root.querySelector("[data-aerial-operations-map]")){
+    const stage=root.querySelector<HTMLElement>(".aerial-operation-stage");
+    stage?.insertAdjacentHTML("beforebegin",'<div class="aerial-initiative-overview"><div><span class="kicker">CANADA + USA AERIAL INITIATIVES</span><b>Select a deployment to open its tactical GPS below</b></div><div class="aerial-selected-summary" data-aerial-selected><span><small>SELECTED DEPLOYMENT</small><b>Loading priority initiative…</b></span></div></div><div class="workspace-fire-map aerial-operations-map" data-aerial-operations-map></div>');
+  }
+  if(mode==="logistics"&&!root.querySelector("[data-continental-logistics-map]")){
+    const network=root.querySelector<HTMLElement>(".logistics-control .supply-network");
+    network?.insertAdjacentHTML("beforebegin",'<div class="continental-logistics-heading"><span><small>CONTINENTAL SUPPLY CONTROL</small><b>Canada + United States · hubs, corridors and incident demand</b></span><em>Cross-border operating picture</em></div><div class="workspace-fire-map continental-logistics-map" data-continental-logistics-map></div><div class="continental-logistics-metrics"><span><small>REGIONAL HUBS</small><b>10</b></span><span><small>WATER AVAILABLE</small><b>18.4M L</b></span><span><small>BATTERY MODULES</small><b>42,800</b></span><span><small>CARRIERS MOVING</small><b>186</b></span><span><small>ACTIVE CORRIDORS</small><b>34</b></span><span><small>USEFUL ARRIVAL</small><b>94.1%</b></span></div>');
+  }
+  if(mode==="recovery"&&!root.querySelector("[data-robot-hospital-map]")){
+    const title=root.querySelector<HTMLElement>("#domain-recovery .view-title");
+    title?.insertAdjacentHTML("afterend",'<section class="robot-hospital-overview"><header><div><span class="kicker">CANADA + USA ROBOT CARE NETWORK</span><h3>Firefighter robot hospitals, medical teams & recovery demand</h3></div><b>10 REGIONAL HOSPITALS · 24/7</b></header><div class="workspace-fire-map robot-hospital-map" data-robot-hospital-map></div><div class="robot-hospital-totals"><span><small>ROBOT DOCTORS</small><b>286</b></span><span><small>INJURED ROBOTS</small><b>347</b></span><span><small>CRITICAL</small><b>42</b></span><span><small>QUARANTINED</small><b>31</b></span><span><small>BAYS AVAILABLE</small><b>184</b></span><span><small>RECERTIFIED · 24H</small><b>96</b></span></div></section>');
+  }
+  const selector=mode==="predictive"?"[data-predictive-fire-map]":mode==="hazard"?"[data-hazard-intelligence-map]":mode==="logistics"?"[data-continental-logistics-map]":mode==="recovery"?"[data-robot-hospital-map]":mode==="mission"?"[data-mission-fire-map]":mode==="fleet"?"[data-fleet-fire-map]":mode==="aerial"?"[data-aerial-operations-map]":mode==="vegetation"?"[data-vegetation-work-map]":"[data-vehicle-fire-map]";
   const host=root.querySelector<HTMLElement>(selector);if(!host)return;
   const [L,fires]=await Promise.all([import("leaflet") as Promise<typeof Leaflet>,loadSharedFires()]);
   const map=L.map(host,{center:[52,-106],zoom:3,minZoom:2,maxZoom:15,preferCanvas:true});
@@ -380,7 +423,76 @@ async function createWorkspaceMap(root:HTMLElement,mode:WorkspaceMap):Promise<vo
   map.setView([53,-106],3);
   const priorityFires=fires.filter(fire=>fire.priority==="critical"||fire.priority==="high");
   fires.forEach(fire=>L.circleMarker([fire.latitude,fire.longitude],{radius:1.25,color:"#ff7d4d",weight:0,fillColor:"#ff7d4d",fillOpacity:.5}).addTo(map));
-  if(mode==="predictive"){
+  if(mode==="recovery"){
+    const hospitals=[
+      {id:"RH-BC1",name:"Pacific Robot Hospital",at:[49.28,-123.12] as[number,number],doctors:34,injured:48,critical:7,quarantine:4,bays:21},
+      {id:"RH-AB2",name:"Alberta Field Robotics Centre",at:[53.55,-113.49] as[number,number],doctors:38,injured:56,critical:9,quarantine:6,bays:18},
+      {id:"RH-SK3",name:"Prairie Recovery Hospital",at:[52.13,-106.67] as[number,number],doctors:22,injured:27,critical:3,quarantine:2,bays:19},
+      {id:"RH-ON4",name:"Northern Ontario Robot Care",at:[48.38,-89.25] as[number,number],doctors:31,injured:44,critical:8,quarantine:5,bays:16},
+      {id:"RH-QC5",name:"Eastern Canada Robotics Hospital",at:[46.81,-71.21] as[number,number],doctors:27,injured:29,critical:2,quarantine:3,bays:24},
+      {id:"RH-WA6",name:"Cascadia Robot Trauma Centre",at:[47.61,-122.33] as[number,number],doctors:33,injured:41,critical:5,quarantine:2,bays:20},
+      {id:"RH-UT7",name:"Mountain Robotics Hospital",at:[40.76,-111.89] as[number,number],doctors:29,injured:35,critical:3,quarantine:2,bays:17},
+      {id:"RH-CO8",name:"Rockies Recovery Centre",at:[39.74,-104.99] as[number,number],doctors:28,injured:31,critical:2,quarantine:3,bays:18},
+      {id:"RH-TX9",name:"Southern Robot Medical Hub",at:[32.78,-96.80] as[number,number],doctors:24,injured:20,critical:1,quarantine:2,bays:16},
+      {id:"RH-VA10",name:"Eastern US Robotics Hospital",at:[38.90,-77.04] as[number,number],doctors:20,injured:16,critical:2,quarantine:2,bays:15},
+    ];
+    hospitals.forEach((hospital,index)=>{
+      const pressure=hospital.injured/hospital.bays;
+      const colour=hospital.critical>=7?"#ff5f45":pressure>2?"#f7b955":"#62cbd1";
+      L.circle(hospital.at,{radius:18_000+hospital.injured*550,color:colour,weight:2,fillColor:colour,fillOpacity:.12,dashArray:hospital.critical>=7?"6 4":undefined})
+        .bindTooltip(`<b>${hospital.name}</b><br>${hospital.doctors} robot doctors · ${hospital.injured} injured · ${hospital.critical} critical<br>${hospital.quarantine} quarantined · ${hospital.bays} treatment bays available`).addTo(map);
+      L.marker(hospital.at,{icon:L.divIcon({className:`robot-hospital-marker ${hospital.critical>=7?"critical":""}`,html:`<i>✚</i><b>${hospital.id}</b><strong>${hospital.name}</strong><span>${hospital.doctors} doctors · ${hospital.injured} injured</span><small>${hospital.critical} CRITICAL · ${hospital.bays} bays free</small>`,iconSize:[145,64]})}).addTo(map);
+      const fire=priorityFires[(index*3)%Math.max(priorityFires.length,1)];
+      if(fire)L.polyline([[fire.latitude,fire.longitude],hospital.at],{color:colour,weight:1.5,opacity:.55,dashArray:"5 8",className:"robot-recovery-route"}).bindTooltip(`${fire.name} → ${hospital.id}<br>Recovery and medical transport corridor`).addTo(map);
+    });
+    const pressure=[...hospitals].sort((left,right)=>right.critical-left.critical||right.injured-left.injured).slice(0,5);
+    const control=new L.Control({position:"topright"});control.onAdd=()=>{const el=L.DomUtil.create("div","robot-hospital-control");el.innerHTML=`<b>CARE NETWORK PRESSURE</b><small>Highest critical caseload</small>${pressure.map(hospital=>`<span><i>${hospital.id}</i><strong>${hospital.critical} critical</strong><em>${hospital.injured} injured · ${hospital.doctors} doctors</em></span>`).join("")}`;return el};control.addTo(map);
+    map.fitBounds(L.latLngBounds([[27,-131],[61,-63]]),{padding:[20,20]});
+  }else if(mode==="logistics"){
+    const hubs=[
+      {id:"YVR-CA",name:"Pacific Canada",at:[49.28,-123.12] as[number,number],water:2.4,batteries:5200,carriers:24},
+      {id:"YEG-CA",name:"Prairie North",at:[53.55,-113.49] as[number,number],water:2.8,batteries:6100,carriers:28},
+      {id:"YWG-CA",name:"Central Canada",at:[49.90,-97.14] as[number,number],water:1.7,batteries:4300,carriers:19},
+      {id:"YQT-CA",name:"Northern Ontario",at:[48.38,-89.25] as[number,number],water:2.1,batteries:4800,carriers:22},
+      {id:"YUL-CA",name:"Eastern Canada",at:[45.50,-73.57] as[number,number],water:1.6,batteries:3900,carriers:17},
+      {id:"SEA-US",name:"Pacific Northwest",at:[47.61,-122.33] as[number,number],water:1.9,batteries:4100,carriers:18},
+      {id:"SLC-US",name:"Mountain West",at:[40.76,-111.89] as[number,number],water:1.8,batteries:3900,carriers:17},
+      {id:"DEN-US",name:"Central Rockies",at:[39.74,-104.99] as[number,number],water:1.5,batteries:3600,carriers:16},
+      {id:"DFW-US",name:"Southern Central",at:[32.78,-96.80] as[number,number],water:1.3,batteries:3300,carriers:14},
+      {id:"IAD-US",name:"Eastern United States",at:[38.95,-77.45] as[number,number],water:1.3,batteries:3600,carriers:11},
+    ];
+    const km=(a:[number,number],b:[number,number])=>{const r=(v:number)=>v*Math.PI/180,dLat=r(b[0]-a[0]),dLon=r(b[1]-a[1]),x=Math.sin(dLat/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(dLon/2)**2;return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))};
+    hubs.forEach((hub,index)=>{
+      if(index<hubs.length-1)L.polyline([hub.at,hubs[index+1]!.at],{color:"#70b7ff",weight:2,opacity:.5,dashArray:"9 7",className:"logistics-corridor"}).bindTooltip(`${hub.id} ↔ ${hubs[index+1]!.id} reserved supply corridor`).addTo(map);
+      L.circle(hub.at,{radius:90_000+hub.carriers*2_500,color:"#70b7ff",weight:1.5,fillColor:"#70b7ff",fillOpacity:.09}).addTo(map);
+      L.marker(hub.at,{icon:L.divIcon({className:"continental-logistics-hub",html:`<b>${hub.id}</b><strong>${hub.name}</strong><span>${hub.water.toFixed(1)}M L · ${hub.batteries.toLocaleString()} batteries</span><small>${hub.carriers} carriers moving</small>`,iconSize:[132,58]})}).bindTooltip(`${hub.name}<br>${hub.water.toFixed(1)} million litres available · ${hub.batteries.toLocaleString()} battery modules · ${hub.carriers} carriers`).addTo(map);
+    });
+    const demand=[...priorityFires].sort((left,right)=>(right.acres??0)-(left.acres??0)).slice(0,14);
+    demand.forEach((fire,index)=>{
+      const origin=hubs.reduce((best,hub)=>km(hub.at,[fire.latitude,fire.longitude])<km(best.at,[fire.latitude,fire.longitude])?hub:best,hubs[0]!);
+      const litres=180_000+((index*137_000)%620_000);
+      L.polyline([origin.at,[fire.latitude,fire.longitude]],{color:"#f7b955",weight:1.4+litres/500_000,opacity:.72,dashArray:"5 8",className:"incident-supply-route"}).bindTooltip(`${origin.id} → ${fire.name}<br>${litres.toLocaleString()} L + ${12+index*3} battery modules reserved`).addTo(map);
+      L.marker([fire.latitude,fire.longitude],{icon:L.divIcon({className:"logistics-demand-marker",html:`<i></i><b>${fire.name}</b><span>${litres.toLocaleString()} L inbound · ${2+index%4} carriers</span>`,iconSize:[126,38]})}).addTo(map);
+    });
+    const control=new L.Control({position:"topright"});control.onAdd=()=>{const el=L.DomUtil.create("div","continental-logistics-control");el.innerHTML="<b>TWO-COUNTRY NETWORK</b><span>5 Canadian hubs</span><span>5 United States hubs</span><span>186 carriers moving</span><span>34 active corridors</span><small>Routes associate priority fires to the nearest capable regional hub.</small>";return el};control.addTo(map);
+    map.fitBounds(L.latLngBounds([[27,-131],[61,-63]]),{padding:[20,20]});
+  }else if(mode==="hazard"){
+    const ranked=[...fires].sort((left,right)=>{
+      const rank=(fire:Fire)=>fire.priority==="critical"?4:fire.priority==="high"?3:fire.priority==="moderate"?2:1;
+      return rank(right)-rank(left)||(right.acres??0)-(left.acres??0);
+    });
+    ranked.slice(0,60).forEach((fire,index)=>{
+      const colour=fire.priority==="critical"?"#ff4e38":fire.priority==="high"?"#ff963d":fire.priority==="moderate"?"#f3d35f":"#6bd3be";
+      const radius=fire.acres===null?18_000:Math.min(145_000,18_000+Math.sqrt(fire.acres)*240);
+      L.circle([fire.latitude,fire.longitude],{radius,color:colour,weight:index<10?2:1,fillColor:colour,fillOpacity:index<10?.14:.06,dashArray:fire.priority==="monitor"?"4 5":undefined})
+        .bindTooltip(`<b>${fire.name}</b><br>${fire.priority.toUpperCase()} priority · ${fire.acres===null?"size unavailable":`${Math.round(fire.acres).toLocaleString()} acres`}<br>${fire.sourceName} · ${fire.observedAt.slice(0,10)}`).addTo(map);
+      if(index<12)L.marker([fire.latitude,fire.longitude],{icon:L.divIcon({className:`hazard-live-marker ${fire.priority}`,html:`<i></i><b>${fire.name}</b><span>${fire.acres===null?"SIZE UNKNOWN":`${Math.round(fire.acres/1000)}K ACRES`} · ${fire.priority.toUpperCase()}</span>`,iconSize:[122,38]})}).addTo(map);
+    });
+    const top=ranked.slice(0,6);
+    const control=new L.Control({position:"topright"});control.onAdd=()=>{const el=L.DomUtil.create("div","hazard-live-control");el.innerHTML=`<b>CURRENT HAZARD PICTURE</b><small>${fires.length} active reports · CWFIS + NASA EONET</small>${top.map((fire,index)=>`<span><i>${String(index+1).padStart(2,"0")}</i><strong>${fire.name}</strong><em>${fire.priority} · ${fire.acres===null?"size unknown":`${Math.round(fire.acres).toLocaleString()} ac`}</em></span>`).join("")}`;return el};control.addTo(map);
+    const legend=new L.Control({position:"bottomleft"});legend.onAdd=()=>{const el=L.DomUtil.create("div","workspace-map-legend hazard-live-legend");el.innerHTML="<b>OBSERVED WILDFIRE HAZARDS</b><span><i class='critical-hazard'></i>Critical ≥25,000 ac</span><span><i class='high-hazard'></i>High ≥5,000 ac</span><span><i class='moderate-hazard'></i>Moderate ≥500 ac</span><small>Circle size reflects reported area; not a forecast perimeter.</small>";return el};legend.addTo(map);
+    if(top.length)map.fitBounds(L.latLngBounds(top.map(fire=>[fire.latitude,fire.longitude] as[number,number])),{padding:[45,45],maxZoom:5});
+  }else if(mode==="predictive"){
     priorityFires.slice(0,28).forEach((fire,index)=>{
       const probability=.42+((index*17)%51)/100;
       L.circle([fire.latitude,fire.longitude],{radius:35_000+probability*85_000,color:probability>.75?"#ff4e38":"#f3d35f",weight:1,fillColor:probability>.75?"#ff4e38":"#f3d35f",fillOpacity:.1,dashArray:"5 5"}).bindTooltip(`${fire.name} · ignition probability ${Math.round(probability*100)}%`).addTo(map);
@@ -406,48 +518,155 @@ async function createWorkspaceMap(root:HTMLElement,mode:WorkspaceMap):Promise<vo
     const legend=new L.Control({position:"bottomleft"});legend.onAdd=()=>{const el=L.DomUtil.create("div","workspace-map-legend mass-legend");el.innerHTML="<b>2,400,000 ROBOT UNITS</b><span><i class='route-key'></i>Mass transport stream</span><span><i class='robot-key'></i>Units in transit</span><span><i class='fire-key'></i>Swarm density field</span><small>Dots are sampled density; labels are authoritative allocation totals.</small>";return el};legend.addTo(map);
   }else if(mode==="fleet"){
     const cells=[
-      {id:"PAC-01",at:[53.2,-128.1] as[number,number],units:230_000,ready:96,energy:84},
-      {id:"BC-02",at:[51.3,-121.4] as[number,number],units:245_000,ready:94,energy:78},
-      {id:"AB-03",at:[54.4,-114.1] as[number,number],units:275_000,ready:92,energy:73},
-      {id:"PR-04",at:[57.4,-106.2] as[number,number],units:180_000,ready:97,energy:89},
-      {id:"MB-05",at:[52.7,-97.1] as[number,number],units:205_000,ready:95,energy:81},
-      {id:"ON-06",at:[50.1,-87.6] as[number,number],units:240_000,ready:93,energy:76},
-      {id:"QC-07",at:[50.8,-74.8] as[number,number],units:210_000,ready:96,energy:86},
-      {id:"ATL-08",at:[46.4,-63.2] as[number,number],units:125_000,ready:98,energy:91},
-      {id:"NW-09",at:[44.2,-121.8] as[number,number],units:210_000,ready:90,energy:69},
-      {id:"MTN-10",at:[40.9,-110.2] as[number,number],units:185_000,ready:94,energy:82},
-      {id:"CTR-11",at:[38.6,-98.3] as[number,number],units:155_000,ready:97,energy:88},
-      {id:"EAST-12",at:[38.1,-79.4] as[number,number],units:140_000,ready:95,energy:80},
+      {id:"BC-NORTH",location:"Prince George, BC",country:"CANADA",at:[53.92,-122.75] as[number,number],units:230_000,ready:96,energy:84},
+      {id:"BC-SOUTH",location:"Kamloops, BC",country:"CANADA",at:[50.67,-120.33] as[number,number],units:245_000,ready:94,energy:78},
+      {id:"AB-WEST",location:"Edmonton, AB",country:"CANADA",at:[53.55,-113.49] as[number,number],units:275_000,ready:92,energy:73},
+      {id:"SK-NORTH",location:"La Ronge, SK",country:"CANADA",at:[55.10,-105.28] as[number,number],units:180_000,ready:97,energy:89},
+      {id:"MB-CENTRAL",location:"The Pas, MB",country:"CANADA",at:[53.83,-101.25] as[number,number],units:205_000,ready:95,energy:81},
+      {id:"NORTHERN ONTARIO",location:"Sioux Lookout, ON",country:"CANADA",at:[50.10,-91.92] as[number,number],units:240_000,ready:93,energy:76},
+      {id:"QC-NORTH",location:"Chibougamau, QC",country:"CANADA",at:[49.92,-74.37] as[number,number],units:210_000,ready:96,energy:86},
+      {id:"ATLANTIC",location:"Fredericton, NB",country:"CANADA",at:[45.96,-66.64] as[number,number],units:125_000,ready:98,energy:91},
+      {id:"US-NORTHWEST",location:"Bend, OR",country:"USA",at:[44.06,-121.32] as[number,number],units:210_000,ready:90,energy:69},
+      {id:"US-MOUNTAIN",location:"Rock Springs, WY",country:"USA",at:[41.59,-109.22] as[number,number],units:185_000,ready:94,energy:82},
+      {id:"US-CENTRAL",location:"Wichita, KS",country:"USA",at:[37.69,-97.34] as[number,number],units:155_000,ready:97,energy:88},
+      {id:"US-EAST",location:"Roanoke, VA",country:"USA",at:[37.27,-79.94] as[number,number],units:140_000,ready:95,energy:80},
     ];
     const cellColours=(ready:number)=>ready>=96?"#54d68c":ready>=93?"#62cbd1":"#f7b955";
+    const distanceKm=(a:[number,number],b:[number,number])=>{
+      const radians=(value:number)=>value*Math.PI/180;
+      const dLat=radians(b[0]-a[0]),dLon=radians(b[1]-a[1]);
+      const lat1=radians(a[0]),lat2=radians(b[0]);
+      const value=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+      return 6371*2*Math.atan2(Math.sqrt(value),Math.sqrt(1-value));
+    };
+    const assignments=new Map<string,Fire[]>(cells.map(cell=>[cell.id,[]]));
+    fires.forEach(fire=>{
+      const nearest=cells.reduce((best,cell)=>distanceKm(cell.at,[fire.latitude,fire.longitude])<distanceKm(best.at,[fire.latitude,fire.longitude])?cell:best,cells[0]!);
+      assignments.get(nearest.id)?.push(fire);
+    });
+    const demandWeight=(fire:Fire)=>fire.priority==="critical"?8:fire.priority==="high"?5:fire.priority==="moderate"?2:1;
+    const cellDemand=cells.map(cell=>Math.max(1,(assignments.get(cell.id)??[]).reduce((sum,fire)=>sum+demandWeight(fire),0)));
+    const totalDemand=cellDemand.reduce((sum,value)=>sum+value,0);
+    const activeFleet=144_000;
+    const northernOntarioReserve=18_000;
+    const demandAllocatedFleet=activeFleet-northernOntarioReserve;
+    const deployed=cells.map((cell,index)=>Math.round(demandAllocatedFleet*cellDemand[index]!/totalDemand)+(cell.id==="NORTHERN ONTARIO"?northernOntarioReserve:0));
+    deployed[deployed.length-1]!+=activeFleet-deployed.reduce((sum,value)=>sum+value,0);
     cells.forEach((cell,index)=>{
       const colour=cellColours(cell.ready);
+      const assigned=[...(assignments.get(cell.id)??[])].sort((left,right)=>demandWeight(right)-demandWeight(left)||(right.acres??0)-(left.acres??0));
+      const criticalCount=assigned.filter(fire=>fire.priority==="critical"||fire.priority==="high").length;
       L.circle(cell.at,{radius:95_000+cell.units/2.8,color:colour,weight:1.5,fillColor:colour,fillOpacity:.1,dashArray:"6 5"}).bindTooltip(`${cell.id} authoritative fleet boundary`).addTo(map);
+      if(cell.id==="NORTHERN ONTARIO")L.circle(cell.at,{radius:235_000,color:"#8ee5b3",weight:2.5,fillColor:"#54d68c",fillOpacity:.12,dashArray:"9 5",className:"northern-ontario-deployment"}).bindTooltip("Northern Ontario dedicated wildfire response reserve · 18,000 units minimum").addTo(map);
       for(let sample=0;sample<28;sample++){const angle=(sample*137.508+index*31)*Math.PI/180,distance=.06+((sample*19)%27)/55;L.circleMarker([cell.at[0]+Math.sin(angle)*distance,cell.at[1]+Math.cos(angle)*distance],{radius:1.4,color:colour,weight:0,fillColor:colour,fillOpacity:.72,interactive:false}).addTo(map)}
-      L.marker(cell.at,{icon:L.divIcon({className:"fleet-cell-marker",html:`<b>${cell.id}</b><strong>${Math.round(cell.units/1000)}K UNITS</strong><span>${cell.ready}% ready · ${cell.energy}% energy</span>`,iconSize:[94,50]})}).bindTooltip(`${cell.units.toLocaleString()} registered robots · ${Math.round(cell.units*cell.ready/100).toLocaleString()} allocatable`).addTo(map);
-      const target=priorityFires[(index*7)%Math.max(priorityFires.length,1)];if(target)L.polyline([cell.at,[target.latitude,target.longitude]],{color:colour,weight:1,opacity:.3,dashArray:"3 7",className:"cell-supply-link"}).bindTooltip(`${cell.id} supplying ${target.name}`).addTo(map);
+      L.marker(cell.at,{icon:L.divIcon({className:"fleet-cell-marker",html:`<b>${cell.id} · ${cell.country}</b><strong>${deployed[index]!.toLocaleString()} DEPLOYED</strong><span>${assigned.length} fires · ${criticalCount} priority</span>`,iconSize:[124,50]})}).bindTooltip(`<b>${cell.location}, ${cell.country}</b><br>${deployed[index]!.toLocaleString()} units deployed across ${assigned.length} geographically assigned fires<br>${cell.units.toLocaleString()} registered · ${cell.ready}% ready · ${cell.energy}% energy`).addTo(map);
+      assigned.slice(0,3).forEach((target,targetIndex)=>L.polyline([cell.at,[target.latitude,target.longitude]],{color:target.priority==="critical"?"#ff4e38":target.priority==="high"?"#ff963d":colour,weight:targetIndex===0?1.8:1,opacity:targetIndex===0?.65:.32,dashArray:"3 7",className:"cell-supply-link"}).bindTooltip(`${cell.id} → ${target.name} · nearest responsible cell`).addTo(map));
     });
-    const legend=new L.Control({position:"bottomleft"});legend.onAdd=()=>{const el=L.DomUtil.create("div","workspace-map-legend fleet-legend");el.innerHTML="<b>2,400,000 REGISTERED</b><span><i class='ready-cell'></i>≥96% ready</span><span><i class='nominal-cell'></i>93–95% ready</span><span><i class='watch-cell'></i>&lt;93% ready</span><small>Particles are density samples; cell labels carry exact totals.</small>";return el};legend.addTo(map);
+    const rankedDemand=cells.map((cell,index)=>({cell,fires:assignments.get(cell.id)?.length??0,priority:(assignments.get(cell.id)??[]).filter(fire=>fire.priority==="critical"||fire.priority==="high").length,deployed:deployed[index]!})).sort((left,right)=>right.fires-left.fires||right.priority-left.priority);
+    const ontarioDemand=rankedDemand.find(item=>item.cell.id==="NORTHERN ONTARIO")!;
+    const demandRanking=[...rankedDemand.filter(item=>item!==ontarioDemand).slice(0,4),ontarioDemand];
+    const demandControl=new L.Control({position:"topright"});demandControl.onAdd=()=>{const el=L.DomUtil.create("div","fleet-demand-control");el.innerHTML=`<b>LIVE FIRE DEMAND</b><small>Nearest-cell geographic assignment</small>${demandRanking.map(item=>`<span><i>${item.cell.id}</i><strong>${item.deployed.toLocaleString()} units</strong><em>${item.fires} fires · ${item.priority} priority</em></span>`).join("")}`;return el};demandControl.addTo(map);
+    const legend=new L.Control({position:"bottomleft"});legend.onAdd=()=>{const el=L.DomUtil.create("div","workspace-map-legend fleet-legend");el.innerHTML="<b>2,400,000 REGISTERED · CANADA + USA</b><span><i class='ready-cell'></i>≥96% ready</span><span><i class='nominal-cell'></i>93–95% ready</span><span><i class='watch-cell'></i>&lt;93% ready</span><small>8 Canadian cells · 4 U.S. cells · labels carry exact totals.</small>";return el};legend.addTo(map);
+  }else if(mode==="aerial"){
+    const initiatives=[...fires].sort((left,right)=>{
+      const rank=(fire:Fire)=>fire.priority==="critical"?4:fire.priority==="high"?3:fire.priority==="moderate"?2:1;
+      return rank(right)-rank(left)||(right.acres??0)-(left.acres??0);
+    }).slice(0,6);
+    const summary=root.querySelector<HTMLElement>("[data-aerial-selected]");
+    const selectInitiative=(fire:Fire,index:number,move=true)=>{
+      const id=`AIR-${String(index+1).padStart(2,"0")}`;
+      const water=index%3===0?12_400:index%3===1?8_600:6_200;
+      const robots=24+index*8;
+      const perimeter=42+((index*11)%47);
+      const cargoPrimary=`CARGO-${String(7+index*3).padStart(2,"0")}`;
+      const cargoSupport=`CARGO-${String(12+index*4).padStart(2,"0")}`;
+      const waterCallsign=`WATER-${String(21+index*2).padStart(2,"0")}`;
+      const run=String(6+index).padStart(2,"0");
+      const stage=root.querySelector<HTMLElement>(".aerial-operation-stage");
+      if(summary)summary.innerHTML=`<span><small>SELECTED DEPLOYMENT</small><b>${id} · ${fire.name}</b></span><span><small>AIRCRAFT</small><b>2 cargo · ${index%2+1} water</b></span><span><small>PAYLOAD</small><b>${robots} robots · ${water.toLocaleString()} L</b></span><span><small>PERIMETER</small><b>${perimeter}% secured</b></span>`;
+      if(stage){
+        stage.dataset.deployment=id;
+        const fireLabel=stage.querySelector<SVGTextElement>(".active-fire-shape text");
+        if(fireLabel)fireLabel.textContent=fire.name.length>22?`${fire.name.slice(0,20)}…`:fire.name;
+        const cargoPlanes=stage.querySelectorAll<HTMLElement>(".cargo-plane:not(.water-plane)");
+        const primaryName=cargoPlanes[0]?.querySelector<HTMLElement>("b"),primaryDetail=cargoPlanes[0]?.querySelector<HTMLElement>("span");
+        const supportName=cargoPlanes[1]?.querySelector<HTMLElement>("b"),supportDetail=cargoPlanes[1]?.querySelector<HTMLElement>("span");
+        if(primaryName)primaryName.textContent=cargoPrimary;
+        if(primaryDetail)primaryDetail.textContent=`${Math.ceil(robots*.38)} robots · FL0${42+index*3}`;
+        if(supportName)supportName.textContent=cargoSupport;
+        if(supportDetail)supportDetail.textContent=`Cohort ${String.fromCharCode(68+index)} · inbound`;
+        const waterPlane=stage.querySelector<HTMLElement>(".water-plane");
+        const waterName=waterPlane?.querySelector<HTMLElement>("b"),waterDetail=waterPlane?.querySelector<HTMLElement>("span");
+        if(waterName)waterName.textContent=waterCallsign;
+        if(waterDetail)waterDetail.textContent=`${water.toLocaleString()} L · DROP ARMED`;
+        const secured=stage.querySelector<SVGPathElement>(".blanket-laid");
+        if(secured){secured.style.strokeDasharray=`${Math.max(14,perimeter/2)} ${Math.max(5,(100-perimeter)/4)}`;secured.style.opacity=String(.55+perimeter/220)}
+        const hudValues=stage.querySelectorAll<HTMLElement>(".aerial-operation-hud b");
+        if(hudValues[0])hudValues[0].textContent=`${Math.min(96,48+index*9)}% released`;
+        if(hudValues[1])hudValues[1].textContent=`${water.toLocaleString()} L armed`;
+        if(hudValues[2])hudValues[2].textContent=`${perimeter}% secured`;
+        if(hudValues[3])hudValues[3].textContent=`0${1+index}:${String(18+index*7).padStart(2,"0")}`;
+        const hudLabels=stage.querySelectorAll<HTMLElement>(".aerial-operation-hud small");
+        if(hudLabels[0])hudLabels[0].textContent=`ROBOT RUN ${run}`;
+        const rightFlight=stage.querySelectorAll<HTMLElement>(".pilot-flight-data.right b");
+        if(rightFlight[0])rightFlight[0].textContent=(2.1+index*.7).toFixed(1);
+        if(rightFlight[1])rightFlight[1].textContent=`00:${String(28+index*6).padStart(2,"0")}`;
+        if(rightFlight[2])rightFlight[2].textContent=`${String(28+index*7).padStart(3,"0")}/${16+index}`;
+        const activity=stage.querySelector<HTMLElement>(".aerial-activity-feed");
+        if(activity)activity.innerHTML=`<b>LIVE AIR ACTIVITY · ${id}</b><span><time>NOW</time>${waterCallsign} inbound to ${fire.name}</span><span><time>-06s</time>${cargoPrimary} released ${Math.ceil(robots*.25)} robots</span><span><time>-14s</time>${cargoSupport} crossed release gate RG-${String.fromCharCode(65+index)}</span><span><time>-21s</time>Perimeter segment P-${14+index} secured · ${perimeter}% total</span>`;
+        const footerValues=root.querySelectorAll<HTMLElement>(".aerial-live-operation>footer b");
+        if(footerValues[0])footerValues[0].textContent=String(Math.round(robots*perimeter/100));
+        if(footerValues[1])footerValues[1].textContent=`${index%2+1} active`;
+        if(footerValues[2])footerValues[2].textContent=`${Math.round(water*.72).toLocaleString()} L`;
+        if(footerValues[3])footerValues[3].textContent=`${perimeter}%`;
+      }
+      root.querySelectorAll(".aerial-initiative-marker").forEach((marker,markerIndex)=>marker.classList.toggle("selected",markerIndex===index));
+      if(move)map.flyTo([fire.latitude,fire.longitude],6,{duration:.65});
+    };
+    initiatives.forEach((fire,index)=>{
+      const id=`AIR-${String(index+1).padStart(2,"0")}`;
+      const base:[number,number]=fire.latitude>49?[53.55,-113.49]:[39.1,-98.3];
+      L.polyline([base,[fire.latitude,fire.longitude]],{color:index%2?"#62cbd1":"#b99cff",weight:1.5,opacity:.5,dashArray:"8 7",className:"aerial-initiative-route"}).bindTooltip(`${id} inbound flight corridor`).addTo(map);
+      L.circle([fire.latitude,fire.longitude],{radius:65_000+(index%3)*18_000,color:"#ff7047",weight:1.5,fillColor:"#ff7047",fillOpacity:.08,dashArray:"5 5"}).addTo(map);
+      L.marker([fire.latitude,fire.longitude],{icon:L.divIcon({className:"aerial-initiative-marker",html:`<i>✈</i><b>${id}</b><strong>${fire.name}</strong><span>${index%2+3} aircraft · ${24+index*8} robots</span>`,iconSize:[126,54]})})
+        .bindTooltip(`<b>${id} · ${fire.name}</b><br>Open tactical GPS and deployment detail`)
+        .on("click",()=>selectInitiative(fire,index)).addTo(map);
+    });
+    map.fitBounds(L.latLngBounds(initiatives.map(fire=>[fire.latitude,fire.longitude] as[number,number])),{padding:[45,45],maxZoom:4});
+    if(initiatives[0])selectInitiative(initiatives[0],0,false);
+    const legend=new L.Control({position:"bottomleft"});legend.onAdd=()=>{const el=L.DomUtil.create("div","workspace-map-legend aerial-initiative-legend");el.innerHTML="<b>ACTIVE AERIAL INITIATIVES</b><span><i class='cargo-key'></i>Cargo robot deployment</span><span><i class='water-key'></i>Water-bomber support</span><span><i class='fire-key'></i>Active fire operating area</span><small>Click an AIR marker to update the tactical GPS detail below.</small>";return el};legend.addTo(map);
   }else if(mode==="vegetation"){
-    map.setView([50.8,-117.5],5);
-    const zones=[
-      {id:"V-12",name:"Thompson Ridge",method:"Mechanical thinning",at:[50.52,-120.31] as[number,number],progress:63,workers:12,removed:38.4,area:61,colour:"#82db71"},
-      {id:"V-08",name:"Cariboo Fuel Break",method:"Mastication",at:[52.63,-122.16] as[number,number],progress:41,workers:8,removed:21.7,area:53,colour:"#f0c95a"},
-      {id:"V-21",name:"Rocky Mountain House",method:"Selective removal",at:[52.36,-114.92] as[number,number],progress:78,workers:8,removed:44.5,area:57,colour:"#58c9b1"},
-      {id:"V-31",name:"Okanogan Corridor",method:"Brush cutting",at:[48.55,-119.62] as[number,number],progress:0,workers:0,removed:0,area:42,colour:"#7e9188"},
-    ];
+    const worstFires=[...fires].sort((left,right)=>{
+      const rank=(fire:Fire)=>fire.priority==="critical"?4:fire.priority==="high"?3:fire.priority==="moderate"?2:1;
+      return rank(right)-rank(left)||(right.acres??0)-(left.acres??0);
+    }).slice(0,4);
+    const workerPlan=[10,8,6,4],progressPlan=[68,47,31,14],methods=["Mechanical thinning","Mastication fuel break","Selective removal","Brush cutting"];
+    const zones=worstFires.map((fire,index)=>{
+      const area=48+index*7;
+      const progress=progressPlan[index]!;
+      return{id:`V-${String(index+1).padStart(2,"0")}`,name:`${fire.name} spread-control zone`,fire,method:methods[index]!,at:[fire.latitude,fire.longitude] as[number,number],progress,workers:workerPlan[index]!,removed:area*progress/100,area,colour:["#82db71","#f0c95a","#58c9b1","#e28f55"][index]!};
+    });
+    if(zones.length)map.fitBounds(L.latLngBounds(zones.map(zone=>zone.at)),{padding:[55,55],maxZoom:6});
     const selected=root.querySelector<HTMLElement>("[data-vegetation-selection]");
     const selectZone=(zone:typeof zones[number])=>{
-      if(selected)selected.innerHTML=`<span><small>SELECTED WORK AREA</small><b>${zone.id} · ${zone.name}</b></span><span><small>METHOD</small><b>${zone.method}</b></span><span><small>PROGRESS</small><b>${zone.progress}%</b></span><span><small>WORKERS</small><b>${zone.workers} ${zone.workers?"active":"staged"}</b></span><span><small>REMOVED</small><b>${zone.removed.toFixed(1)} ha</b></span>`;
+      if(selected)selected.innerHTML=`<span><small>PROTECTED FIRE</small><b>${zone.fire.name}</b></span><span><small>TREATMENT</small><b>${zone.id} · ${zone.method}</b></span><span><small>PROGRESS</small><b>${zone.progress}% of ${zone.area} ha</b></span><span><small>ROBOTS</small><b>${zone.workers} actively removing</b></span><span><small>VEGETATION REMOVED</small><b>${zone.removed.toFixed(1)} ha</b></span>`;
     };
     zones.forEach((zone,index)=>{
-      const lat=zone.at[0],lon=zone.at[1],width=.42+(index%2)*.13,height=.25+(index%3)*.05;
+      const lat=zone.at[0],lon=zone.at[1],width=.48+(index%2)*.12,height=.3+(index%3)*.05;
       const boundary:[[number,number],[number,number],[number,number],[number,number]]=[
         [lat-height,lon-width],[lat-height*.65,lon+width],[lat+height,lon+width*.7],[lat+height*.72,lon-width*.85]
       ];
+      L.circle(zone.at,{radius:54_000+index*4_000,color:"#74d99b",weight:2,fillColor:"#74d99b",fillOpacity:.025,dashArray:"11 7"})
+        .bindTooltip(`<b>${zone.id}-C · PLANNED FUEL-BREAK RING</b><br>Outer spread-prevention zone around ${zone.fire.name}`).addTo(map);
+      L.circle(zone.at,{radius:36_000+index*3_000,color:zone.colour,weight:3,fillColor:zone.colour,fillOpacity:.08,dashArray:"6 4"})
+        .bindTooltip(`<b>${zone.id}-B · ACTIVE VEGETATION REMOVAL RING</b><br>${zone.fire.name}<br>${zone.workers} robots · ${zone.progress}% complete · ${zone.removed.toFixed(1)} of ${zone.area} ha removed`).addTo(map);
       const polygon=L.polygon(boundary,{color:zone.colour,weight:2,fillColor:zone.colour,fillOpacity:.18,dashArray:zone.progress===0?"7 6":undefined})
-        .bindTooltip(`<b>${zone.id} · ${zone.name}</b><br>${zone.progress}% complete · ${zone.workers} workers`)
+        .bindTooltip(`<b>${zone.id}-B · ACTIVE REMOVAL WORKFACE</b><br>${zone.fire.name} · ${zone.progress}% complete · ${zone.workers} robots`)
         .on("click",()=>selectZone(zone)).addTo(map);
+      L.circle(zone.at,{radius:18_000+Math.min(zone.fire.acres??0,100_000)*.15,color:"#ff6545",weight:2,fillColor:"#ff4e38",fillOpacity:.12,dashArray:"4 5"})
+        .bindTooltip(`<b>${zone.id}-A · FIRE EXCLUSION CIRCLE</b><br>Current ${zone.fire.name} influence area · removal robots remain outside`).addTo(map);
+      L.marker(zone.at,{zIndexOffset:1000,icon:L.divIcon({className:"vegetation-fire-marker",html:`<i>▲</i><b>ACTIVE FIRE</b><strong>${zone.fire.name}</strong><span>${zone.fire.priority.toUpperCase()} · ${zone.fire.acres===null?"size unavailable":`${Math.round(zone.fire.acres).toLocaleString()} acres`}</span>`,iconSize:[132,58],iconAnchor:[66,29]})})
+        .bindTooltip(`<b>ACTIVE FIRE · ${zone.fire.name}</b><br>${zone.fire.priority} priority · vegetation removal is operating outside the exclusion circle`).addTo(map);
       if(zone.progress>0){
         const treated:[[number,number],[number,number],[number,number],[number,number]]=[
           [lat-height*.86,lon-width*.86],[lat-height*.55,lon-width*.86+width*1.55*(zone.progress/100)],[lat+height*.72,lon-width*.7+width*1.4*(zone.progress/100)],[lat+height*.55,lon-width*.72]
@@ -459,13 +678,15 @@ async function createWorkspaceMap(root:HTMLElement,mode:WorkspaceMap):Promise<vo
         const workerLat=lat-height*.52+row*.12;
         const workerLon=lon-width*.58+column*.19;
         L.marker([workerLat,workerLon],{icon:L.divIcon({className:"vegetation-worker-marker",html:`<i></i><b>VW-${String(index*12+worker+1).padStart(3,"0")}</b>`,iconSize:[38,18]})})
-          .bindTooltip(`Vegetation worker VW-${String(index*12+worker+1).padStart(3,"0")} · cutting lane ${column+1} · tool current`)
+          .bindTooltip(`Vegetation robot VW-${String(index*12+worker+1).padStart(3,"0")} · ${zone.fire.name} fuel break · cutting lane ${column+1} · tool current`)
           .on("click",()=>selectZone(zone)).addTo(map);
         if(worker%4===0)L.polyline([[workerLat,workerLon-.09],[workerLat,workerLon+.34]],{color:"#b8f08b",weight:2,opacity:.7,dashArray:"2 4",interactive:false}).addTo(map);
       }
-      L.marker(zone.at,{icon:L.divIcon({className:"vegetation-zone-label",html:`<b>${zone.id}</b><span>${zone.progress}% · ${zone.removed.toFixed(1)} ha removed</span>`,iconSize:[116,34]})}).on("click",()=>{polygon.openTooltip();selectZone(zone)}).addTo(map);
+      L.marker([lat+height+.18,lon],{icon:L.divIcon({className:"vegetation-zone-label",html:`<b>${zone.id} · ${zone.fire.name}</b><span>${zone.workers} robots · ${zone.progress}% · ${zone.removed.toFixed(1)} / ${zone.area} ha removed</span>`,iconSize:[178,38]})}).on("click",()=>{polygon.openTooltip();selectZone(zone)}).addTo(map);
     });
-    const legend=new L.Control({position:"bottomleft"});legend.onAdd=()=>{const el=L.DomUtil.create("div","workspace-map-legend vegetation-legend");el.innerHTML="<b>ACTIVE FUEL TREATMENT</b><span><i class='treated-key'></i>Removal completed</span><span><i class='worker-key'></i>Vegetation worker</span><span><i class='boundary-key'></i>Authorized boundary</span><small>Click a boundary or worker to inspect the work area.</small>";return el};legend.addTo(map);
+    if(zones[0])selectZone(zones[0]);
+    const zoneControl=new L.Control({position:"topright"});zoneControl.onAdd=()=>{const el=L.DomUtil.create("div","vegetation-zone-control");el.innerHTML=`<b>VEGETATION REMOVAL ZONES</b><small>Circles track work around priority fires</small>${zones.map(zone=>`<span><i>${zone.id}</i><strong>${zone.fire.name}</strong><em>${zone.removed.toFixed(1)} / ${zone.area} ha · ${zone.progress}% · ${zone.workers} robots</em></span>`).join("")}<footer><i class="zone-a"></i>Fire <i class="zone-b"></i>Active removal <i class="zone-c"></i>Planned break</footer>`;return el};zoneControl.addTo(map);
+    const legend=new L.Control({position:"bottomleft"});legend.onAdd=()=>{const el=L.DomUtil.create("div","workspace-map-legend vegetation-legend");el.innerHTML="<b>WORST-FIRE SPREAD CONTROL</b><span><i class='treated-key'></i>Vegetation removed</span><span><i class='worker-key'></i>Active removal robot</span><span><i class='boundary-key'></i>Preventative treatment zone</span><span><i class='fire-key'></i>Current fire influence area</span><small>Zones follow the four highest-severity live fire reports.</small>";return el};legend.addTo(map);
   }else{
     const gateways=[
       {id:"GW-PAC",at:[50.9,-127.2] as[number,number],sessions:185_000,latency:21,state:"nominal"},
@@ -499,5 +720,5 @@ async function createWorkspaceMap(root:HTMLElement,mode:WorkspaceMap):Promise<vo
 }
 export function mountWorkspaceFireMaps(root:HTMLElement):void{
   if(import.meta.env.MODE==="test")return;
-  window.addEventListener("workspacechange",event=>{const workspace=(event as CustomEvent<{workspace:string}>).detail.workspace;if(workspace==="predictive"||workspace==="mission"||workspace==="fleet"||workspace==="vehicle"||workspace==="vegetation")setTimeout(()=>void createWorkspaceMap(root,workspace),0)});
+  window.addEventListener("workspacechange",event=>{const workspace=(event as CustomEvent<{workspace:string}>).detail.workspace;if(workspace==="hazard"||workspace==="predictive"||workspace==="mission"||workspace==="fleet"||workspace==="vehicle"||workspace==="vegetation"||workspace==="aerial"||workspace==="logistics"||workspace==="recovery")setTimeout(()=>void createWorkspaceMap(root,workspace),0)});
 }

@@ -1,0 +1,125 @@
+.aerial-operation-stage .aerial-activity-feed {
+  top: 48px;
+  right: 120px;
+}
+
+.aerial-initiative-overview {
+  min-height: 56px;
+  padding: 9px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid #293d36;
+  background: #0b1512;
+}
+
+.aerial-initiative-overview > div:first-child b {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+}
+
+.aerial-selected-summary {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.aerial-selected-summary span {
+  min-width: 105px;
+  padding-left: 12px;
+  border-left: 1px solid #31463f;
+}
+
+.aerial-selected-summary small,
+.aerial-selected-summary b {
+  display: block;
+}
+
+.aerial-selected-summary small {
+  color: #70837a;
+  font-size: 6px;
+  letter-spacing: .1em;
+}
+
+.aerial-selected-summary b {
+  margin-top: 3px;
+  font-size: 8px;
+}
+
+.aerial-operations-map {
+  height: 380px;
+  border-bottom: 1px solid #293d36;
+}
+
+.aerial-initiative-marker {
+  width: 126px !important;
+  height: 54px !important;
+  padding: 5px 7px;
+  display: grid !important;
+  grid-template-columns: 25px 1fr;
+  grid-template-rows: auto auto auto;
+  border: 1px solid #62cbd1;
+  border-radius: 5px;
+  background: #081716ee;
+  color: #e8f1ed;
+  box-shadow: 0 0 13px #62cbd155;
+}
+
+.aerial-initiative-marker.selected {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px #62cbd144, 0 0 20px #62cbd1;
+}
+
+.aerial-initiative-marker i {
+  grid-row: 1 / 4;
+  align-self: center;
+  color: #62cbd1;
+  font-size: 21px;
+  font-style: normal;
+}
+
+.aerial-initiative-marker b,
+.aerial-initiative-marker strong,
+.aerial-initiative-marker span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aerial-initiative-marker b {
+  color: #91e7eb;
+  font-size: 7px;
+}
+
+.aerial-initiative-marker strong {
+  font-size: 8px;
+}
+
+.aerial-initiative-marker span {
+  color: #82968d;
+  font-size: 6px;
+}
+
+.aerial-initiative-route {
+  animation: aerialRouteFlow 1.2s linear infinite;
+}
+
+.cargo-key {
+  background: #b99cff;
+}
+
+.water-key {
+  background: #65d8ff;
+}
+
+@media (max-width: 850px) {
+  .aerial-selected-summary span:not(:first-child) {
+    display: none;
+  }
+
+  .aerial-operation-stage .aerial-activity-feed {
+    display: none;
+  }
+}
