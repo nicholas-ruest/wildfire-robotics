@@ -1,23 +1,134 @@
-import {contexts,type Context,type DataState,type OperatorSnapshot} from "./models";
-import {OperatorRouteCodec,WORKSPACE_GROUPS} from "./ui";
+import {
+  contexts,
+  type Context,
+  type DataState,
+  type OperatorSnapshot,
+} from "./models";
+import { OperatorRouteCodec, WORKSPACE_GROUPS } from "./ui";
 import {
   mountOperatorVisualizationRuntime,
   type FrameRenderer,
   type OperatorVisualizationRuntime,
 } from "./visualization";
+import { mountLiveFireMap, mountWorkspaceFireMaps } from "./live-fire-map";
 
-const escape=(value:string)=>value.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]??c));
-const labels:Record<Context,string>={incident:"Incident",mission:"Missions",fleet:"Fleet",station:"Stations",logistics:"Logistics",hazard:"Intelligence",safety:"Safety",recovery:"Recovery"};
-const icons:Record<Context,string>={incident:"⌁",mission:"◇",fleet:"▲",station:"▣",logistics:"⇄",hazard:"◉",safety:"✦",recovery:"＋"};
-const workspaces=["incident","hazard","predictive","mission","fleet","vehicle","station","logistics","vegetation","suppression","aerial","safety","identity","recovery","commercial"] as const;
-type Workspace=typeof workspaces[number];
-const workspaceLabels:Record<Workspace,string>={incident:"Incident Command",hazard:"Hazard Intelligence",predictive:"Predictive Planning",mission:"Mission Control",fleet:"Fleet Operations",vehicle:"Vehicle Integration",station:"Station Operations",logistics:"Logistics",vegetation:"Vegetation",suppression:"Suppression",aerial:"Aerial Deployment",safety:"Safety Assurance",identity:"Identity & Access",recovery:"Robot Care",commercial:"Commercial Ops"};
-const workspaceIcons:Record<Workspace,string>={incident:"⌁",hazard:"◉",predictive:"⌁",mission:"◇",fleet:"▲",vehicle:"⌁",station:"▣",logistics:"⇄",vegetation:"♧",suppression:"≋",aerial:"△",safety:"✦",identity:"⌾",recovery:"＋",commercial:"◎"};
-const stateLabel=(state:DataState)=>state==="current"?"Live":state;
-const routeCodec=new OperatorRouteCodec();
-function groupedNavigation():string{return WORKSPACE_GROUPS.map(group=>`<section class="nav-group"><h2>${group.label}</h2><div role="tablist" aria-label="${group.label} workspaces">${group.workspaces.map(([c])=>{const i=workspaces.indexOf(c);return `<button role="tab" id="tab-${c}" aria-controls="${c==="incident"?"panel-incident":`domain-${c}`}" aria-selected="${i===0}" tabindex="${i===0?0:-1}"><span class="nav-icon">${workspaceIcons[c]}</span><span>${workspaceLabels[c]}</span>${c==="safety"?'<span class="nav-count">1</span>':""}</button>`}).join("")}</div></section>`).join("")}
+const escape = (value: string) =>
+  value.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ] ?? c,
+  );
+const labels: Record<Context, string> = {
+  incident: "Incident",
+  mission: "Missions",
+  fleet: "Fleet",
+  station: "Stations",
+  logistics: "Logistics",
+  hazard: "Intelligence",
+  safety: "Safety",
+  recovery: "Recovery",
+};
+const icons: Record<Context, string> = {
+  incident: "⌁",
+  mission: "◇",
+  fleet: "▲",
+  station: "▣",
+  logistics: "⇄",
+  hazard: "◉",
+  safety: "✦",
+  recovery: "＋",
+};
+const workspaces = [
+  "incident",
+  "hazard",
+  "predictive",
+  "mission",
+  "fleet",
+  "vehicle",
+  "station",
+  "logistics",
+  "vegetation",
+  "suppression",
+  "aerial",
+  "safety",
+  "identity",
+  "recovery",
+  "commercial",
+] as const;
+type Workspace = (typeof workspaces)[number];
+const workspaceLabels: Record<Workspace, string> = {
+  incident: "Incident Command",
+  hazard: "Hazard Intelligence",
+  predictive: "Predictive Planning",
+  mission: "Mission Control",
+  fleet: "Fleet Operations",
+  vehicle: "Vehicle Integration",
+  station: "Station Operations",
+  logistics: "Logistics",
+  vegetation: "Vegetation",
+  suppression: "Suppression",
+  aerial: "Aerial Deployment",
+  safety: "Safety Assurance",
+  identity: "Identity & Access",
+  recovery: "Robot Care",
+  commercial: "Commercial Ops",
+};
+const workspaceIcons: Record<Workspace, string> = {
+  incident: "⌁",
+  hazard: "◉",
+  predictive: "⌁",
+  mission: "◇",
+  fleet: "▲",
+  vehicle: "⌁",
+  station: "▣",
+  logistics: "⇄",
+  vegetation: "♧",
+  suppression: "≋",
+  aerial: "△",
+  safety: "✦",
+  identity: "⌾",
+  recovery: "＋",
+  commercial: "◎",
+};
+const workspaceSubtitles:Record<Workspace,string>={incident:"Canada + United States live incident picture",hazard:"Observed hazards, provenance and uncertainty",predictive:"Forecast scenarios and bounded recommendations",mission:"Plans, leases, conflicts and dispatch outcomes",fleet:"Vehicle eligibility, health and cell capacity",vehicle:"Gateway sessions, intent and telemetry",station:"Habitat, energy and edge readiness",logistics:"Supply, custody and useful arrival",vegetation:"Fuel treatment prescriptions and parcels",suppression:"Water delivery and suppression envelopes",aerial:"Payload qualification and release corridor",safety:"Constraints, occurrences and promotion evidence",identity:"Authority, grants and emergency access",recovery:"Recovery, quarantine and recertification",commercial:"Metering, contracts and service economics"};
+const workspaceContext:Record<Workspace,Context>={incident:"incident",hazard:"hazard",predictive:"hazard",mission:"mission",fleet:"fleet",vehicle:"fleet",station:"station",logistics:"logistics",vegetation:"hazard",suppression:"incident",aerial:"incident",safety:"safety",identity:"safety",recovery:"recovery",commercial:"logistics"};
+function workspaceSupplement(context:Workspace):string{
+  if(context==="predictive")return`<section class="experience-panel lightning-feed"><header><div><span class="kicker">LIGHTNING + ACTIVE FIRE MAP</span><h3>Ignition probability field</h3></div><b><i></i> FORECAST STREAM</b></header><div class="workspace-fire-map" data-predictive-fire-map></div><footer><span><small>STRIKES · 15 MIN</small><b>184</b></span><span><small>DRY LIGHTNING</small><b>63%</b></span><span><small>HIGHEST RISK</small><b>Peace River</b></span><span><small>MODEL HORIZON</small><b>90 min</b></span></footer></section>`;
+  if(context==="aerial")return`<section class="experience-panel blanket-control"><header><div><span class="kicker">DETERRENT BLANKET SYSTEM</span><h3>Panel formation & terrain coupling</h3></div><b>47 / 48 HEALTHY</b></header><div class="blanket-field">${Array.from({length:48},(_,i)=>`<i class="${i===16?"fault":i<38?"anchored":"airborne"}" title="Panel ${String(i+1).padStart(2,"0")}"></i>`).join("")}</div><footer><span>ANCHORED <b>38</b></span><span>AIRBORNE <b>9</b></span><span>ISOLATED <b>1</b></span><span>COVERAGE <b>12.4 ha</b></span></footer></section>`;
+  if(context==="vehicle")return`<section class="experience-panel brain-control"><header><div><span class="kicker">CONTINENTAL VEHICLE INTEGRATION</span><h3>Gateway sessions, intent, telemetry & cognition</h3></div><b><i></i> 2.4M SESSIONS ONLINE</b></header><div class="workspace-fire-map" data-vehicle-fire-map></div><div class="vehicle-link-metrics"><span><small>COMMAND ACK</small><b>99.97%</b></span><span><small>MEDIAN LATENCY</small><b>18 ms</b></span><span><small>TELEMETRY RATE</small><b>8.4 TB/s</b></span><span><small>ISOLATED COHORTS</small><b>3</b></span></div><div class="brain-grid"><div class="brain-map"><span class="lobe perception">PERCEPTION</span><span class="lobe planning">PLANNING</span><span class="lobe motion">MOTION</span><span class="lobe safety">SAFETY</span><svg viewBox="0 0 500 180"><path d="M70 90C140 20 185 150 250 90S365 18 435 90"/><path d="M70 100C135 160 190 32 250 100S370 165 435 100"/></svg></div><div class="brain-signals"><p><span>Inference load</span><b>62%</b></p><p><span>Safety vetoes</span><b class="warn-text">3</b></p><p><span>Consensus latency</span><b>18 ms</b></p><p><span>Policy digest</span><b>88…4af</b></p></div></div></section>`;
+  if(context==="mission")return`<section class="experience-panel planning-control"><header><div><span class="kicker">MASS ROBOT MISSION MAP</span><h3>Continental fire assignment & swarm control</h3></div><b>2.4 MILLION BOTS ACTIVE</b></header><div class="workspace-fire-map" data-mission-fire-map></div><div class="planning-lanes"><span>INCIDENT OBJECTIVES<i style="--p:92%"></i><b>4/4</b></span><span>HAZARD SNAPSHOTS<i style="--p:78%"></i><b>6/8</b></span><span>ROBOT UNITS<i style="--p:88%"></i><b>2.4M</b></span><span>TRANSPORT CORRIDORS<i style="--p:72%"></i><b>42/58</b></span></div></section>`;
+  if(context==="fleet")return`<section class="experience-panel fleet-command"><header><div><span class="kicker">CONTINENTAL FLEET CELL MAP</span><h3>2.4 million robot identities, readiness & capacity</h3></div><b>94.2% ALLOCATABLE</b></header><div class="workspace-fire-map" data-fleet-fire-map></div><div class="fleet-scale-metrics"><span><small>REGISTERED</small><b>2,400,000</b></span><span><small>READY</small><b>2,116,800</b></span><span><small>ACTIVE</small><b>144,000</b></span><span><small>SERVICE</small><b>96,000</b></span><span><small>GROUNDED</small><b>43,200</b></span></div></section>`;
+  if(context==="vegetation")return`<section class="experience-panel vegetation-control"><header><div><span class="kicker">VEGETATION FIELD OPERATIONS</span><h3>Active fuel-removal zones & worker positions</h3></div><b><i></i> 28 WORKERS ONLINE</b></header><div class="workspace-fire-map vegetation-work-map" data-vegetation-work-map></div><div class="vegetation-selection" data-vegetation-selection><span><small>SELECTED WORK AREA</small><b>V-12 · Thompson Ridge</b></span><span><small>METHOD</small><b>Mechanical thinning</b></span><span><small>PROGRESS</small><b>63%</b></span><span><small>WORKERS</small><b>12 active</b></span><span><small>REMOVED</small><b>38.4 ha</b></span></div></section>`;
+  if(context==="logistics")return`<section class="experience-panel logistics-control"><header><div><span class="kicker">INCIDENT SUPPLY NETWORK</span><h3>Water, batteries, carriers & custody</h3></div><b>94% USEFUL ARRIVAL</b></header><div class="supply-network"><span>3 WATER SOURCES</span><i></i><span>6 CARRIERS</span><i></i><span>4 FIRE SITES</span></div><footer><b>42,000 L</b> reserved · <b>96 robots</b> sealed · <b>2 shortages</b> actively rerouting</footer></section>`;
+  return"";
+}
+const stateLabel = (state: DataState) => (state === "current" ? "Live" : state);
+const routeCodec = new OperatorRouteCodec();
+function groupedNavigation(): string {
+  return WORKSPACE_GROUPS.map(
+    (group) =>
+      `<section class="nav-group"><h2>${group.label}</h2><div role="tablist" aria-label="${group.label} workspaces">${group.workspaces
+        .map(([c]) => {
+          const i = workspaces.indexOf(c);
+          return `<button role="tab" id="tab-${c}" aria-controls="${c === "incident" ? "panel-incident" : `domain-${c}`}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}"><span class="nav-icon">${workspaceIcons[c]}</span><span>${workspaceLabels[c]}</span>${c === "safety" ? '<span class="nav-count">1</span>' : ""}</button>`;
+        })
+        .join("")}</div></section>`,
+  ).join("");
+}
 
-function mapMarkup():string{return `<section class="map-card" aria-label="Live incident map">
+function liveMapMarkup(): string {
+  return `<section class="live-fire-explorer" aria-label="Canada and United States active wildfire explorer" data-live-fire-map>
+  <div class="fire-map-header"><div><span class="live-dot"></span><span class="kicker">NORTH AMERICA FIRE WATCH</span><strong data-fire-count>Connecting…</strong></div><div class="source-lockup"><span data-feed-status>Connecting to NASA EONET…</span><a href="https://eonet.gsfc.nasa.gov/" target="_blank" rel="noreferrer">Source ↗</a></div></div>
+  <div class="fire-explorer-grid"><div class="continental-map"><div class="maplibre-host" data-fire-plot role="application" aria-label="Interactive map of Canada and the United States with active wildfire reports"></div>
+    <div class="severity-legend"><span>OPERATIONAL PRIORITY · AREA HEURISTIC</span><i class="marker-critical"></i>Critical ≥25k ac<i class="marker-high"></i>High ≥5k<i class="marker-moderate"></i>Moderate ≥500<i class="marker-monitor"></i>Monitor / unknown</div><div class="map-disclaimer">Marker colour is a local triage heuristic—not agency-reported severity or containment.</div>
+  </div><aside class="fire-index"><div class="fire-index-title"><span>ACTIVE REPORTS</span><small>Largest first</small></div><div data-fire-list><p class="loading-line">Acquiring current incidents…</p></div></aside></div>
+  <section class="fire-detail" data-fire-detail><div class="loading-fire"><span></span><p>Waiting for incident feed…</p></div></section></section>`;
+}
+
+function legacyMapMarkup(): string {
+  return `<section class="map-card" aria-label="Live incident map">
   <div class="map-toolbar"><div><span class="live-dot"></span><strong>Live operational picture</strong><span class="map-time">Updated 18 sec ago</span></div><div class="map-actions"><button aria-label="Map layers">Layers</button><button aria-label="Center map">◎</button><button aria-label="Zoom in">＋</button><button aria-label="Zoom out">−</button></div></div>
   <div class="map-canvas">
     <svg viewBox="0 0 1000 620" role="img" aria-label="Topographic map showing the Ridge Creek fire perimeter and deployed assets">
@@ -33,9 +144,22 @@ function mapMarkup():string{return `<section class="map-card" aria-label="Live i
     </svg>
     <div class="map-legend"><span><i class="legend-fire"></i>Active perimeter</span><span><i class="legend-blanket"></i>Blanket coverage</span><span><i class="legend-zone"></i>Exclusion zone</span></div>
     <div class="coordinates">49.238° N&nbsp;&nbsp; 121.781° W <span>EPSG:4326</span></div>
-  </div></section>`}
+  </div></section>`;
+}
 
-function domainWorkspaces():string{return `<div class="domain-workspaces">
+function hazardVisualMarkup(): string {
+  return `<div class="hazard-visual" aria-label="Probabilistic fire spread forecast"><div class="hazard-rings"><i></i><i></i><i></i><span>IGNITION<br>CORE</span><b class="wind-vector">NE 28 km/h →</b></div><div class="hazard-scale"><span>NOW</span><span>+1 HOUR</span><span>+2 HOURS</span><span>+4 HOURS</span></div><p>Ensemble spread envelope · uncertainty expands with forecast horizon</p></div>`;
+}
+function aerialVisualMarkup(): string {
+  return `<div class="aerial-visual" aria-label="Aerial deployment corridor"><div class="flight-path"><span class="aircraft">✈</span><i></i><b>RELEASE GATE</b><em></em><span class="target-zone">TARGET<br>ALPHA</span></div><div class="aerial-readings"><span><small>ALTITUDE</small><b>1,240 m</b></span><span><small>GROUND SPEED</small><b>148 km/h</b></span><span><small>CROSSWIND</small><b>12 km/h</b></span></div></div>`;
+}
+const mapMarkup = (() => {
+  let call = 0;
+  const views = [liveMapMarkup, hazardVisualMarkup, aerialVisualMarkup];
+  return () => views[call++ % 3]!();
+})();
+function domainWorkspaces(): string {
+  return `<div class="domain-workspaces">
   <section class="domain-view" id="domain-mission" hidden><div class="view-title"><div><span class="kicker">MISSION CONTROL</span><h2>Authorized mission board</h2><p>Plans, fenced leases, conflicts, dispatch, and minimum-risk outcomes.</p></div><button class="domain-action">＋ Plan mission</button></div><div class="domain-metrics"><article><small>AUTHORIZED</small><strong>7</strong><span>Exact constraint snapshots</span></article><article><small>ACTIVE LEASES</small><strong>5</strong><span>2 renew within 15 min</span></article><article><small>CONFLICT SETS</small><strong>1</strong><span class="warn-text">Hard conflict unresolved</span></article><article><small>INTENT OUTCOMES</small><strong>38 / 41</strong><span>3 indeterminate</span></article></div><div class="mission-board"><div><h3>Planning <b>2</b></h3><article><span class="tag recon">RECON</span><strong>North ridge thermal survey</strong><p>Assignment AS-188 · 4 UAVs</p><footer><span>Hazard snapshot current</span><b>72%</b></footer></article><article><span class="tag logistics">RELAY</span><strong>Restore sector-7 connectivity</strong><p>Assignment AS-191 · 2 UAVs</p><footer><span>Awaiting deconfliction</span><b>48%</b></footer></article></div><div><h3>Authorized <b>2</b></h3><article><span class="tag blanket-tag">AERIAL</span><strong>Blanket deployment · Alpha</strong><p>Lease 8F2A · expires 14:32</p><footer><span>Dual authority verified</span><b>Ready</b></footer></article><article><span class="tag vegetation-tag">TREATMENT</span><strong>Fuel break · Unit V-12</strong><p>Lease 91C4 · 18 robots</p><footer><span>Prescription v4</span><b>Ready</b></footer></article></div><div><h3>Executing <b>3</b></h3><article><span class="tag suppression-tag">SUPPRESSION</span><strong>East flank water relay</strong><p>12 robots · fenced epoch 2048</p><footer><span class="good-text">Telemetry current</span><b>64%</b></footer></article><article class="attention-card"><span class="tag warning-tag">RECOVERY</span><strong>Recover robot R-044</strong><p>Medic pod MP-7 · quarantine bay Q2</p><footer><span class="warn-text">Route degraded</span><b>Held</b></footer></article></div></div></section>
   <section class="domain-view" id="domain-fleet" hidden><div class="view-title"><div><span class="kicker">FLEET OPERATIONS</span><h2>Eligibility, health & cell fencing</h2><p>Vehicle capability, battery readiness, configuration, and authoritative membership epochs.</p></div><button class="domain-action">Export capacity</button></div><div class="domain-metrics"><article><small>REGISTERED</small><strong>104</strong><span>Identity trust current</span></article><article><small>ALLOCATABLE</small><strong>86</strong><span class="good-text">82.7% ready</span></article><article><small>GROUNDED</small><strong>3</strong><span class="warn-text">Clearance required</span></article><article><small>FLEET CELLS</small><strong>8</strong><span>Epochs authoritative</span></article></div><div class="split-view"><section class="data-panel"><div class="panel-title"><h3>Vehicle registry</h3><input aria-label="Filter vehicles" placeholder="Filter callsign or capability"></div><table><thead><tr><th>Vehicle</th><th>Cell / epoch</th><th>Capability</th><th>Energy</th><th>Health</th><th>Eligibility</th></tr></thead><tbody><tr><td><b>R-017</b><small>UGV · config 7.3</small></td><td>Alpha · 2048</td><td>Water relay</td><td>82% ±2</td><td>Current</td><td><span class="table-state ok">Eligible</span></td></tr><tr><td><b>U-012</b><small>UAV · config 4.8</small></td><td>Air-2 · 914</td><td>Recon / relay</td><td>68% ±3</td><td>Current</td><td><span class="table-state active">Allocated</span></td></tr><tr><td><b>R-044</b><small>UGV · config 7.2</small></td><td>Bravo · 2048</td><td>Vegetation</td><td>Unknown</td><td>Thermal fault</td><td><span class="table-state bad">Grounded</span></td></tr><tr><td><b>R-061</b><small>UGV · config 7.3</small></td><td>Alpha · 2048</td><td>Anchor / tow</td><td>91% ±2</td><td>Current</td><td><span class="table-state ok">Eligible</span></td></tr></tbody></table></section><section class="data-panel cell-panel"><h3>Cell Alpha capacity</h3><div class="capacity-ring"><span>24<small>members</small></span></div><dl><div><dt>Epoch</dt><dd>2048</dd></div><div><dt>Available power</dt><dd>1.82 MWh ±4%</dd></div><div><dt>Connectivity</dt><dd>Mesh healthy</dd></div><div><dt>Hot partition</dt><dd class="good-text">No</dd></div></dl></section></div></section>
   <section class="domain-view" id="domain-station" hidden><div class="view-title"><div><span class="kicker">STATION OPERATIONS</span><h2>Habitat, energy & edge readiness</h2><p>Local safety services, charging, emergency reserve, deployment sync, and load shedding.</p></div><button class="domain-action">Optimize charging</button></div><div class="station-grid"><section class="data-panel station-hero"><span class="table-state ok">AVAILABLE</span><h3>Station Bravo · Habitat HB-02</h3><p>Edge deployment 3.12.4 · policy bundle 88 · sync cursor 194,220</p><div class="energy-flow"><div><small>PV ARRAY</small><strong>142 kW</strong></div><i>→</i><div><small>MICROGRID BUS</small><strong>318 kW</strong></div><i>→</i><div><small>CRITICAL LOAD</small><strong>96 kW</strong></div></div></section><section class="data-panel"><h3>Energy reserve</h3><div class="big-reading">78<small>% SOC</small></div><p class="good-text">Emergency reserve protected</p><div class="mini-chart"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></section><section class="data-panel"><h3>Charge sessions</h3><ul class="session-list"><li><span>R-028 · Bay 04</span><b>68% · 44 kW</b></li><li><span>R-031 · Bay 07</span><b>91% · balancing</b></li><li><span>BAT-882 · Zone C</span><b class="warn-text">Thermal watch</b></li></ul></section><section class="data-panel"><h3>Edge workload priority</h3><ul class="priority-list"><li><b>1</b>Command & safety <span>Reserved</span></li><li><b>2</b>Identity & audit <span>Reserved</span></li><li><b>3</b>Telemetry <span>Normal</span></li><li><b>4</b>ML indexing <span class="warn-text">Shed</span></li></ul></section></div></section>
@@ -43,73 +167,295 @@ function domainWorkspaces():string{return `<div class="domain-workspaces">
   <section class="domain-view" id="domain-hazard" hidden><div class="view-title"><div><span class="kicker">HAZARD INTELLIGENCE + PREDICTIVE PLANNING</span><h2>Evidence-backed common operating picture</h2><p>Licensed observations, immutable snapshots, promoted models, forecasts, and advisory recommendations.</p></div><button class="domain-action">Compare scenarios</button></div><div class="split-view hazard-layout"><section class="data-panel forecast-map">${mapMarkup()}</section><section class="data-panel"><h3>Forecast release PP-3.8.1</h3><span class="table-state ok">PROMOTED · ODD VALID</span><div class="forecast-bars"><p><span>North ridge spread</span><i style="--v:82%"></i><b>0.82</b></p><p><span>East drainage</span><i style="--v:61%"></i><b>0.61</b></p><p><span>Station Bravo exposure</span><i style="--v:24%"></i><b>0.24</b></p></div><dl><div><dt>Input snapshot</dt><dd>HP-440 · immutable</dd></div><div><dt>Valid horizon</dt><dd>4 hours</dd></div><div><dt>Calibration</dt><dd>Current</dd></div><div><dt>Limitations</dt><dd>Smoke obscuration SW sector</dd></div></dl></section></div></section>
   <section class="domain-view" id="domain-safety" hidden><div class="view-title"><div><span class="kicker">SAFETY ASSURANCE</span><h2>Constraints, occurrences & promotion evidence</h2><p>Independent review, exact configuration scope, signed constraints, and fail-closed promotion.</p></div><button class="domain-action">Open evidence case</button></div><div class="domain-metrics"><article><small>ACTIVE CONSTRAINTS</small><strong>38</strong><span>Signed and current</span></article><article><small>OPEN OCCURRENCES</small><strong>1</strong><span class="warn-text">Immediate controls active</span></article><article><small>PROMOTED CAPABILITIES</small><strong>24</strong><span>Exact ODD scope</span></article><article><small>EXPIRING REVIEWS</small><strong>3</strong><span>Within 14 days</span></article></div><div class="split-view"><section class="data-panel"><h3>Safety occurrence SO-119</h3><span class="severity">NEAR MISS</span><h4>Panel A-17 temperature sensor freshness gap</h4><p>Zone-local inhibit applied. Deployment continued only in unaffected cohorts; no containment effectiveness inferred.</p><div class="evidence-chain"><span>Occurrence recorded</span><span>Immediate control verified</span><span>Independent review pending</span><span>Promotion suspended</span></div></section><section class="data-panel"><h3>Release promotion query</h3><ul class="gate-list"><li class="pass">✓ Source → artifact lineage</li><li class="pass">✓ Requirements & invariants</li><li class="pass">✓ Test evidence current</li><li class="pass">✓ Independent approval</li><li class="fail">× Open occurrence resolved</li></ul><button class="blocked-action" disabled>Promotion blocked</button></section></div></section>
   <section class="domain-view" id="domain-recovery" hidden><div class="view-title"><div><span class="kicker">ROBOT CARE & RECOVERY</span><h2>Recovery, quarantine & recertification</h2><p>Scene hazards, medic pods, custody, repair evidence, burn-in, and independent return-to-service.</p></div><button class="domain-action">Request recovery</button></div><div class="domain-metrics"><article><small>ACTIVE RECOVERIES</small><strong>7</strong><span>2 field · 5 hospital</span></article><article><small>QUARANTINED</small><strong>2</strong><span>Thermal / chemical</span></article><article><small>MAINTENANCE DUE</small><strong>11</strong><span>3 critical within 8 h</span></article><article><small>RECERTIFIED TODAY</small><strong>14</strong><span>Evidence published</span></article></div><div class="split-view"><section class="data-panel"><h3>Recovery case RC-044</h3><div class="recovery-path"><span class="done">Requested</span><span class="done">Scene assessed</span><span class="active">Medic dispatched</span><span>Stabilized</span><span>Custody transfer</span><span>Quarantine</span></div><dl><div><dt>Robot</dt><dd>R-044 · 460 kg</dd></div><div><dt>Known hazards</dt><dd>Stored energy, thermal exposure</dd></div><div><dt>Medic pod</dt><dd>MP-7 · compatible</dd></div><div><dt>Destination</dt><dd>Station Bravo · Q2 reserved</dd></div></dl></section><section class="data-panel"><h3>Hospital capacity</h3><div class="bay-grid"><span class="busy">Q1<small>Occupied</small></span><span class="reserved">Q2<small>Reserved</small></span><span>Q3<small>Available</small></span><span class="busy">M1<small>Repair</small></span><span>M2<small>Available</small></span><span class="busy">B1<small>Burn-in</small></span></div></section></div></section>
-  </div>`}
+  </div>`;
+}
 
-function additionalWorkspaces():string{return `<div class="domain-workspaces supplemental">
+function additionalWorkspaces(): string {
+  return `<div class="domain-workspaces supplemental">
 <section class="domain-view" id="domain-predictive" hidden><div class="view-title"><div><span class="kicker">PREDICTIVE PLANNING</span><h2>Scenario laboratory & model governance</h2><p>Promoted releases, deterministic forecast runs, uncertainty, drift, and advisory recommendations.</p></div><button class="domain-action">Run bounded forecast</button></div><div class="domain-metrics"><article><small>PROMOTED MODEL</small><strong>PP-3.8.1</strong><span>ODD current</span></article><article><small>ACTIVE RUNS</small><strong>4</strong><span>Seeded and reproducible</span></article><article><small>DRIFT</small><strong>0.7σ</strong><span class="good-text">Within threshold</span></article><article><small>HORIZON</small><strong>4 h</strong><span>Advisory validity</span></article></div><div class="scenario-grid"><section class="data-panel model-runs"><h3>Scenario comparison</h3><div class="scenario-row baseline"><b>Baseline · no intervention</b><i style="--spread:88%"></i><span>4,420 ha ±18%</span></div><div class="scenario-row"><b>East-flank suppression</b><i style="--spread:62%"></i><span>3,170 ha ±21%</span></div><div class="scenario-row selected"><b>Blanket + fuel break</b><i style="--spread:41%"></i><span>2,730 ha ±24%</span></div><p class="model-disclaimer">Recommendations are advisory. Incident Command retains authority; uncertainty and negative outcomes remain visible.</p></section><section class="data-panel"><h3>Model release evidence</h3><ul class="gate-list"><li class="pass">✓ Immutable artifact digest</li><li class="pass">✓ Input validity domain</li><li class="pass">✓ Calibration current</li><li class="pass">✓ Shadow evaluation</li><li class="pass">✓ Independent approval</li></ul></section></div></section>
 <section class="domain-view" id="domain-vehicle" hidden><div class="view-title"><div><span class="kicker">VEHICLE INTEGRATION</span><h2>Gateway sessions, intent & telemetry</h2><p>Protocol-neutral command delivery with explicit acknowledgement and physical outcome stages.</p></div><button class="domain-action">Inspect adapter health</button></div><div class="domain-metrics"><article><small>GATEWAY SESSIONS</small><strong>92</strong><span>89 healthy · 3 degraded</span></article><article><small>TELEMETRY</small><strong>8.4k/s</strong><span>Tier drops accounted</span></article><article><small>PENDING INTENTS</small><strong>3</strong><span>No duplicate effect</span></article><article><small>UNKNOWN OUTCOME</small><strong>1</strong><span class="warn-text">Operator review</span></article></div><div class="split-view"><section class="data-panel"><h3>Command delivery VI-CMD-8821</h3><div class="protocol-track"><span class="done">Signed envelope</span><span class="done">Transport ACK</span><span class="done">Vehicle accepted</span><span class="active">Executing</span><span>Physical outcome</span></div><dl><div><dt>Vehicle / adapter</dt><dd>R-017 · simulator-v1</dd></div><div><dt>Fence / expected version</dt><dd>2048 / 77</dd></div><div><dt>Clock quality</dt><dd>±8 ms · acceptable</dd></div><div><dt>Idempotency key</dt><dd>idem-7cc…91a</dd></div></dl></section><section class="data-panel"><h3>Normalized telemetry</h3><div class="oscilloscope"><i></i><i></i><i></i></div><ul class="session-list"><li><span>Position freshness</span><b class="good-text">84 ms</b></li><li><span>Link quality</span><b>96%</b></li><li><span>Local safety state</span><b class="good-text">Nominal</b></li><li><span>Protocol duplicate guard</span><b>Armed</b></li></ul></section></div></section>
-<section class="domain-view" id="domain-vegetation" hidden><div class="view-title"><div><span class="kicker">VEGETATION MANAGEMENT</span><h2>Prescription-to-effectiveness operations</h2><p>Authorized treatment units, exclusions, robot work packages, planned-versus-actual evidence.</p></div><button class="domain-action">Create prescription</button></div><div class="domain-metrics"><article><small>PROGRAM AREA</small><strong>318 ha</strong><span>12 treatment units</span></article><article><small>ACTIVE WORK</small><strong>3</strong><span>28 robots reserved</span></article><article><small>EXCLUSIONS</small><strong>7</strong><span>Utility / wildlife</span></article><article><small>EFFECTIVENESS DUE</small><strong>4</strong><span>30/90 day horizons</span></article></div><div class="split-view"><section class="data-panel treatment-map"><h3>Treatment Unit V-12</h3><div class="parcel-grid">${Array.from({length:30},(_,i)=>`<i class="${[6,7,13].includes(i)?"excluded":i<19?"treated":""}"></i>`).join("")}</div><div class="map-legend"><span><i class="legend-blanket"></i>Treated</span><span><i class="legend-fire"></i>Exclusion</span></div></section><section class="data-panel"><h3>Work package WP-244</h3><div class="recovery-path"><span class="done">Prescribed</span><span class="done">Approved</span><span class="active">Executing</span><span>Verified</span><span>Assessed</span></div><dl><div><dt>Method</dt><dd>Mechanical thinning</dd></div><div><dt>Authority expires</dt><dd>14:32 UTC</dd></div><div><dt>Actual geometry</dt><dd>63.3% complete</dd></div><div><dt>Tool stop proof</dt><dd class="good-text">Current</dd></div></dl></section></div></section>
+<section class="domain-view" id="domain-vegetation" hidden><div class="view-title"><div><span class="kicker">VEGETATION MANAGEMENT</span><h2>Prescription-to-effectiveness operations</h2><p>Authorized treatment units, exclusions, robot work packages, planned-versus-actual evidence.</p></div><button class="domain-action">Create prescription</button></div><div class="domain-metrics"><article><small>PROGRAM AREA</small><strong>318 ha</strong><span>12 treatment units</span></article><article><small>ACTIVE WORK</small><strong>3</strong><span>28 robots reserved</span></article><article><small>EXCLUSIONS</small><strong>7</strong><span>Utility / wildlife</span></article><article><small>EFFECTIVENESS DUE</small><strong>4</strong><span>30/90 day horizons</span></article></div><div class="split-view"><section class="data-panel treatment-map"><h3>Treatment Unit V-12</h3><div class="parcel-grid">${Array.from({ length: 30 }, (_, i) => `<i class="${[6, 7, 13].includes(i) ? "excluded" : i < 19 ? "treated" : ""}"></i>`).join("")}</div><div class="map-legend"><span><i class="legend-blanket"></i>Treated</span><span><i class="legend-fire"></i>Exclusion</span></div></section><section class="data-panel"><h3>Work package WP-244</h3><div class="recovery-path"><span class="done">Prescribed</span><span class="done">Approved</span><span class="active">Executing</span><span>Verified</span><span>Assessed</span></div><dl><div><dt>Method</dt><dd>Mechanical thinning</dd></div><div><dt>Authority expires</dt><dd>14:32 UTC</dd></div><div><dt>Actual geometry</dt><dd>63.3% complete</dd></div><div><dt>Tool stop proof</dt><dd class="good-text">Current</dd></div></dl></section></div></section>
 <section class="domain-view" id="domain-suppression" hidden><div class="view-title"><div><span class="kicker">SUPPRESSION OPERATIONS</span><h2>Teleoperation & actuation envelope</h2><p>Two-person arming, independent stop, bounded targets, dose reconciliation, and occurrence capture.</p></div><button class="danger-action">INHIBIT ALL FLOW</button></div><div class="suppression-layout"><section class="data-panel suppression-hero"><span class="table-state active">SUPERVISED EXECUTION</span><h3>Operation SP-088 · East flank water relay</h3><div class="gauge"><div><span>312<small>L/min measured</small></span></div></div><div class="envelope-row"><span><small>MAX FLOW</small><b>420 L/min</b></span><span><small>CUMULATIVE DOSE</small><b>18,240 L</b></span><span><small>TARGET ERROR</small><b>1.8 m ±0.4</b></span><span><small>STOP LATENCY</small><b>84 ms</b></span></div></section><section class="data-panel"><h3>Arming authority</h3><ul class="gate-list"><li class="pass">✓ Target verified</li><li class="pass">✓ Agent batch current</li><li class="pass">✓ Incident authority</li><li class="pass">✓ Safety envelope</li><li class="pass">✓ Two distinct approvers</li><li class="pass">✓ Independent stop healthy</li></ul></section></div></section>
 <section class="domain-view" id="domain-aerial" hidden><div class="view-title"><div><span class="kicker">AERIAL DEPLOYMENT OPERATIONS</span><h2>Payload, release & blanket installation</h2><p>Exact configuration qualification, load reconciliation, dual-key release, cohorts, panels, and recovery.</p></div><button class="domain-action">Open release checklist</button></div><div class="domain-metrics"><article><small>CONFIGURATION</small><strong>AFB-07</strong><span>Software simulation only</span></article><article><small>MANIFEST</small><strong>100%</strong><span>Serialized / reconciled</span></article><article><small>DUAL AUTHORITY</small><strong>2 / 2</strong><span>Identical digest</span></article><article><small>COMPONENTS</small><strong>286</strong><span>All accounted</span></article></div><div class="aerial-grid"><section class="data-panel"><h3>Release corridor & dispersion</h3>${mapMarkup()}</section><section class="data-panel"><h3>Coupled deployment state</h3><div class="vertical-phases"><span class="done">Retained</span><span class="done">Extracted</span><span class="done">Stabilized</span><span class="done">Cohort release</span><span class="done">Formation acquired</span><span class="active">Terrain alignment</span><span>Landing / anchoring</span></div><h3>Cohort margins</h3><table><tbody><tr><td>A</td><td>Stable</td><td>8.1 kN</td><td><span class="table-state ok">Clear</span></td></tr><tr><td>B</td><td>Stable</td><td>7.8 kN</td><td><span class="table-state ok">Clear</span></td></tr><tr><td>C</td><td>Reefed</td><td>8.6 kN</td><td><span class="table-state active">Holding</span></td></tr></tbody></table></section></div></section>
 <section class="domain-view" id="domain-identity" hidden><div class="view-title"><div><span class="kicker">IDENTITY & ACCESS</span><h2>Zero-trust authority control</h2><p>Principals, device identity, short-lived grants, approvals, revocation, and signed command verification.</p></div><button class="domain-action">Review grants</button></div><div class="domain-metrics"><article><small>ACTIVE PRINCIPALS</small><strong>47</strong><span>6 roles in scope</span></article><article><small>TRUSTED DEVICES</small><strong>211</strong><span>Attestation current</span></article><article><small>EXPIRING GRANTS</small><strong>4</strong><span class="warn-text">Within 30 min</span></article><article><small>REPLAY DENIALS</small><strong>3</strong><span>Last 24 hours</span></article></div><div class="split-view"><section class="data-panel"><h3>Authority graph · Incident IC-0714</h3><div class="authority-tree"><div>Incident Commander<small>Objective authority</small></div><i></i><div>Operations Chief<small>Assignment scope</small></div><i></i><div>Mission Supervisor<small>MC-204 · expires 14:32</small></div></div></section><section class="data-panel"><h3>Command envelope verification</h3><ul class="gate-list"><li class="pass">✓ Signature & key generation</li><li class="pass">✓ Tenant / incident / geography</li><li class="pass">✓ Payload digest</li><li class="pass">✓ Expected aggregate version</li><li class="pass">✓ Freshness / clock quality</li><li class="pass">✓ Replay nonce unclaimed</li></ul></section></div></section>
-<section class="domain-view" id="domain-commercial" hidden><div class="view-title"><div><span class="kicker">COMMERCIAL OPERATIONS</span><h2>Tenancy, metering & investment evidence</h2><p>Isolation, entitlements, deduplicated usage, support, invoicing, and uncertainty-aware ROI.</p></div><button class="domain-action">Open tenant record</button></div><div class="domain-metrics"><article><small>TENANT</small><strong>Active</strong><span>Region CA · isolated</span></article><article><small>MONTHLY USAGE</small><strong>1.84M</strong><span>Rated events</span></article><article><small>SUPPORT SLO</small><strong>99.97%</strong><span class="good-text">Within budget</span></article><article><small>OPEN CASES</small><strong>2</strong><span>0 safety blocking</span></article></div><div class="split-view"><section class="data-panel"><h3>Usage and cost ledger</h3><div class="cost-chart">${[42,53,47,68,61,76,72,89,83,92,87,96].map(v=>`<i style="height:${v}%"></i>`).join("")}</div><dl><div><dt>Compute / simulation</dt><dd>$18,420</dd></div><div><dt>Connected asset-hours</dt><dd>72,810</dd></div><div><dt>Evidence storage</dt><dd>8.4 TB</dd></div><div><dt>Adjustments</dt><dd>2 immutable credits</dd></div></dl></section><section class="data-panel"><h3>Investment case IC-26-Q3</h3><div class="big-reading">$8.2M<small>median NPV</small></div><p>90% interval: $2.1M–$13.7M</p><ul class="gate-list"><li class="pass">✓ Versioned fact manifest</li><li class="pass">✓ Human counterfactual</li><li class="pass">✓ Sensitivity disclosed</li><li class="pass">✓ No causal overclaim</li></ul></section></div></section>
-</div>`}
+<section class="domain-view" id="domain-commercial" hidden><div class="view-title"><div><span class="kicker">COMMERCIAL OPERATIONS</span><h2>Tenancy, metering & investment evidence</h2><p>Isolation, entitlements, deduplicated usage, support, invoicing, and uncertainty-aware ROI.</p></div><button class="domain-action">Open tenant record</button></div><div class="domain-metrics"><article><small>TENANT</small><strong>Active</strong><span>Region CA · isolated</span></article><article><small>MONTHLY USAGE</small><strong>1.84M</strong><span>Rated events</span></article><article><small>SUPPORT SLO</small><strong>99.97%</strong><span class="good-text">Within budget</span></article><article><small>OPEN CASES</small><strong>2</strong><span>0 safety blocking</span></article></div><div class="split-view"><section class="data-panel"><h3>Usage and cost ledger</h3><div class="cost-chart">${[42, 53, 47, 68, 61, 76, 72, 89, 83, 92, 87, 96].map((v) => `<i style="height:${v}%"></i>`).join("")}</div><dl><div><dt>Compute / simulation</dt><dd>$18,420</dd></div><div><dt>Connected asset-hours</dt><dd>72,810</dd></div><div><dt>Evidence storage</dt><dd>8.4 TB</dd></div><div><dt>Adjustments</dt><dd>2 immutable credits</dd></div></dl></section><section class="data-panel"><h3>Investment case IC-26-Q3</h3><div class="big-reading">$8.2M<small>median NPV</small></div><p>90% interval: $2.1M–$13.7M</p><ul class="gate-list"><li class="pass">✓ Versioned fact manifest</li><li class="pass">✓ Human counterfactual</li><li class="pass">✓ Sensitivity disclosed</li><li class="pass">✓ No causal overclaim</li></ul></section></div></section>
+</div>`;
+}
 
-const diagramSpecs:Record<Exclude<Workspace,"incident">,{icon:string,accent:string,nodes:[string,string,string,string],action:string}>={
-  hazard:{icon:"◉",accent:"#ff6b35",nodes:["Sensor mesh","Hazard picture","Confidence model","Field consumers"],action:"Publish snapshot"},
-  predictive:{icon:"⌁",accent:"#b99cff",nodes:["Weather ensemble","Promoted model","Scenario runs","Advisory release"],action:"Run simulation"},
-  mission:{icon:"◇",accent:"#62cbd1",nodes:["Objectives","Authorization","Fleet lease","Outcome proof"],action:"Dispatch mission"},
-  fleet:{icon:"▲",accent:"#54d68c",nodes:["Registry","Eligibility","Fleet cells","Assignments"],action:"Rebalance cell"},
-  vehicle:{icon:"⌁",accent:"#68d8df",nodes:["Signed intent","Gateway ACK","Local controller","Telemetry proof"],action:"Send diagnostic"},
-  station:{icon:"▣",accent:"#f7b955",nodes:["PV + utility","Microgrid bus","Charge bays","Critical reserve"],action:"Optimize loads"},
-  logistics:{icon:"⇄",accent:"#f7b955",nodes:["Supply sources","Reservations","Custody routes","Useful arrival"],action:"Release delivery"},
-  vegetation:{icon:"♧",accent:"#78d989",nodes:["Prescription","Exclusion check","Robot treatment","Effectiveness"],action:"Approve unit"},
-  suppression:{icon:"≋",accent:"#ff7950",nodes:["Two-key arm","Flow envelope","Target zone","Dose record"],action:"Adjust flow"},
-  aerial:{icon:"△",accent:"#b99cff",nodes:["Payload manifest","Release corridor","Panel cohorts","Anchored blanket"],action:"Advance phase"},
-  safety:{icon:"✦",accent:"#ff8c68",nodes:["Occurrence","Immediate control","Independent review","Promotion gate"],action:"Open review"},
-  identity:{icon:"⌾",accent:"#62cbd1",nodes:["Principal","Scoped grant","Signed command","Audit proof"],action:"Issue grant"},
-  recovery:{icon:"＋",accent:"#79dca4",nodes:["Field request","Medic pod","Quarantine","Recertification"],action:"Dispatch medic"},
-  commercial:{icon:"◎",accent:"#e5bd67",nodes:["Tenant usage","Rating ledger","Invoice evidence","ROI case"],action:"Close period"}
+const diagramSpecs: Record<
+  Exclude<Workspace, "incident">,
+  {
+    icon: string;
+    accent: string;
+    nodes: [string, string, string, string];
+    action: string;
+  }
+> = {
+  hazard: {
+    icon: "◉",
+    accent: "#ff6b35",
+    nodes: [
+      "Sensor mesh",
+      "Hazard picture",
+      "Confidence model",
+      "Field consumers",
+    ],
+    action: "Publish snapshot",
+  },
+  predictive: {
+    icon: "⌁",
+    accent: "#b99cff",
+    nodes: [
+      "Weather ensemble",
+      "Promoted model",
+      "Scenario runs",
+      "Advisory release",
+    ],
+    action: "Run simulation",
+  },
+  mission: {
+    icon: "◇",
+    accent: "#62cbd1",
+    nodes: ["Objectives", "Authorization", "Fleet lease", "Outcome proof"],
+    action: "Dispatch mission",
+  },
+  fleet: {
+    icon: "▲",
+    accent: "#54d68c",
+    nodes: ["Registry", "Eligibility", "Fleet cells", "Assignments"],
+    action: "Rebalance cell",
+  },
+  vehicle: {
+    icon: "⌁",
+    accent: "#68d8df",
+    nodes: [
+      "Signed intent",
+      "Gateway ACK",
+      "Local controller",
+      "Telemetry proof",
+    ],
+    action: "Send diagnostic",
+  },
+  station: {
+    icon: "▣",
+    accent: "#f7b955",
+    nodes: ["PV + utility", "Microgrid bus", "Charge bays", "Critical reserve"],
+    action: "Optimize loads",
+  },
+  logistics: {
+    icon: "⇄",
+    accent: "#f7b955",
+    nodes: [
+      "Supply sources",
+      "Reservations",
+      "Custody routes",
+      "Useful arrival",
+    ],
+    action: "Release delivery",
+  },
+  vegetation: {
+    icon: "♧",
+    accent: "#78d989",
+    nodes: [
+      "Prescription",
+      "Exclusion check",
+      "Robot treatment",
+      "Effectiveness",
+    ],
+    action: "Approve unit",
+  },
+  suppression: {
+    icon: "≋",
+    accent: "#ff7950",
+    nodes: ["Two-key arm", "Flow envelope", "Target zone", "Dose record"],
+    action: "Adjust flow",
+  },
+  aerial: {
+    icon: "△",
+    accent: "#b99cff",
+    nodes: [
+      "Payload manifest",
+      "Release corridor",
+      "Panel cohorts",
+      "Anchored blanket",
+    ],
+    action: "Advance phase",
+  },
+  safety: {
+    icon: "✦",
+    accent: "#ff8c68",
+    nodes: [
+      "Occurrence",
+      "Immediate control",
+      "Independent review",
+      "Promotion gate",
+    ],
+    action: "Open review",
+  },
+  identity: {
+    icon: "⌾",
+    accent: "#62cbd1",
+    nodes: ["Principal", "Scoped grant", "Signed command", "Audit proof"],
+    action: "Issue grant",
+  },
+  recovery: {
+    icon: "＋",
+    accent: "#79dca4",
+    nodes: ["Field request", "Medic pod", "Quarantine", "Recertification"],
+    action: "Dispatch medic",
+  },
+  commercial: {
+    icon: "◎",
+    accent: "#e5bd67",
+    nodes: ["Tenant usage", "Rating ledger", "Invoice evidence", "ROI case"],
+    action: "Close period",
+  },
 };
 
-function workspaceDiagram(context:Exclude<Workspace,"incident">):string{
-  const spec=diagramSpecs[context];
-  const [a,b,c,d]=spec.nodes;
+function workspaceDiagram(context: Exclude<Workspace, "incident">): string {
+  const spec = diagramSpecs[context];
+  const [a, b, c, d] = spec.nodes;
   return `<section class="ops-diagram" data-diagram="${context}" style="--diagram-accent:${spec.accent}">
     <div class="diagram-head"><div><span class="kicker">${workspaceLabels[context].toUpperCase()} · SIMULATED SYSTEM</span><h3>${spec.icon} ${workspaceLabels[context]} control topology</h3></div><span class="diagram-live"><i></i> LIVE SIMULATION</span></div>
     <div class="diagram-body"><svg viewBox="0 0 920 250" role="img" aria-label="${workspaceLabels[context]} simulated operational diagram">
       <defs><pattern id="grid-${context}" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="rgba(255,255,255,.035)"/></pattern><filter id="glow-${context}"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-      <rect width="920" height="250" fill="url(#grid-${context})"/><path class="diagram-route" d="M118 126 C205 ${context.length%2?58:194}, 250 ${context.length%2?194:58}, 334 126 S470 ${context.charCodeAt(0)%2?58:194}, 548 126 S690 ${context.length%3?194:58}, 805 126"/>
+      <rect width="920" height="250" fill="url(#grid-${context})"/><path class="diagram-route" d="M118 126 C205 ${context.length % 2 ? 58 : 194}, 250 ${context.length % 2 ? 194 : 58}, 334 126 S470 ${context.charCodeAt(0) % 2 ? 58 : 194}, 548 126 S690 ${context.length % 3 ? 194 : 58}, 805 126"/>
       <g class="diagram-node selected" transform="translate(118 126)"><circle r="38"/><text y="5">01</text><text class="node-label" y="66">${a}</text></g>
       <g class="diagram-node" transform="translate(334 126)"><rect x="-42" y="-32" width="84" height="64" rx="12"/><text y="5">02</text><text class="node-label" y="60">${b}</text></g>
       <g class="diagram-node" transform="translate(548 126)"><path d="M0-42 45 0 0 42-45 0Z"/><text y="5">03</text><text class="node-label" y="66">${c}</text></g>
       <g class="diagram-node" transform="translate(805 126)"><circle r="38"/><text y="5">04</text><text class="node-label" y="66">${d}</text></g>
-      <circle class="diagram-packet" r="6"><animateMotion dur="3.2s" repeatCount="indefinite" path="M118 126 C205 ${context.length%2?58:194},250 ${context.length%2?194:58},334 126 S470 ${context.charCodeAt(0)%2?58:194},548 126 S690 ${context.length%3?194:58},805 126"/></circle>
+      <circle class="diagram-packet" r="6"><animateMotion dur="3.2s" repeatCount="indefinite" path="M118 126 C205 ${context.length % 2 ? 58 : 194},250 ${context.length % 2 ? 194 : 58},334 126 S470 ${context.charCodeAt(0) % 2 ? 58 : 194},548 126 S690 ${context.length % 3 ? 194 : 58},805 126"/></circle>
     </svg>
-    <aside class="diagram-console"><small>SELECTED COMPONENT</small><strong data-selected>${a}</strong><span data-state>Nominal · telemetry current</span><label>Simulation load <input type="range" min="10" max="100" value="${55+context.length%35}" aria-label="${workspaceLabels[context]} simulation load"></label><div class="diagram-load"><i></i></div><button data-manage>${spec.action}</button></aside></div>
+    <aside class="diagram-console"><small>SELECTED COMPONENT</small><strong data-selected>${a}</strong><span data-state>Nominal · telemetry current</span><label>Simulation load <input type="range" min="10" max="100" value="${55 + (context.length % 35)}" aria-label="${workspaceLabels[context]} simulation load"></label><div class="diagram-load"><i></i></div><button data-manage>${spec.action}</button></aside></div>
   </section>`;
 }
 
-function installWorkspaceManagement(root:HTMLElement):void{
-  (Object.keys(diagramSpecs) as Exclude<Workspace,"incident">[]).forEach(context=>{
-    const view=root.querySelector<HTMLElement>(`#domain-${context}`);view?.insertAdjacentHTML("afterbegin",workspaceDiagram(context));
-  });
-  root.querySelectorAll<HTMLElement>(".ops-diagram").forEach(diagram=>{
-    const nodes=[...diagram.querySelectorAll<SVGElement>(".diagram-node")];const selected=diagram.querySelector<HTMLElement>("[data-selected]");const state=diagram.querySelector<HTMLElement>("[data-state]");
-    nodes.forEach((node,index)=>node.addEventListener("click",()=>{nodes.forEach(n=>n.classList.remove("selected"));node.classList.add("selected");if(selected)selected.textContent=node.querySelector(".node-label")?.textContent??`Component ${index+1}`;if(state)state.textContent=`Component ${index+1} selected · controls available`;}));
-    const range=diagram.querySelector<HTMLInputElement>('input[type="range"]');const bar=diagram.querySelector<HTMLElement>(".diagram-load i");const syncLoad=()=>{if(bar&&range)bar.style.width=`${range.value}%`;};range?.addEventListener("input",()=>{syncLoad();if(state)state.textContent=`Simulation load set to ${range.value}% · pending apply`;});syncLoad();
-    diagram.querySelector<HTMLButtonElement>("[data-manage]")?.addEventListener("click",event=>{const button=event.currentTarget as HTMLButtonElement;button.classList.add("applied");button.textContent="✓ Preview updated";if(state)state.textContent="Simulation preview updated locally · no operational command submitted";window.setTimeout(()=>{button.classList.remove("applied");button.textContent=diagramSpecs[diagram.dataset.diagram as Exclude<Workspace,"incident">].action;},1800);});
+function installWorkspaceManagement(root: HTMLElement): void {
+  (Object.keys(diagramSpecs) as Exclude<Workspace, "incident">[]).forEach(
+    (context) => {
+      const view = root.querySelector<HTMLElement>(`#domain-${context}`);
+      view?.insertAdjacentHTML("afterbegin", workspaceDiagram(context));
+    },
+  );
+  root.querySelectorAll<HTMLElement>(".ops-diagram").forEach((diagram) => {
+    const nodes = [...diagram.querySelectorAll<SVGElement>(".diagram-node")];
+    const selected = diagram.querySelector<HTMLElement>("[data-selected]");
+    const state = diagram.querySelector<HTMLElement>("[data-state]");
+    nodes.forEach((node, index) =>
+      node.addEventListener("click", () => {
+        nodes.forEach((n) => n.classList.remove("selected"));
+        node.classList.add("selected");
+        if (selected)
+          selected.textContent =
+            node.querySelector(".node-label")?.textContent ??
+            `Component ${index + 1}`;
+        if (state)
+          state.textContent = `Component ${index + 1} selected · controls available`;
+      }),
+    );
+    const range = diagram.querySelector<HTMLInputElement>(
+      'input[type="range"]',
+    );
+    const bar = diagram.querySelector<HTMLElement>(".diagram-load i");
+    const syncLoad = () => {
+      if (bar && range) bar.style.width = `${range.value}%`;
+    };
+    range?.addEventListener("input", () => {
+      syncLoad();
+      if (state)
+        state.textContent = `Simulation load set to ${range.value}% · pending apply`;
+    });
+    syncLoad();
+    diagram
+      .querySelector<HTMLButtonElement>("[data-manage]")
+      ?.addEventListener("click", (event) => {
+        const button = event.currentTarget as HTMLButtonElement;
+        button.classList.add("applied");
+        button.textContent = "✓ Preview updated";
+        if (state)
+          state.textContent =
+            "Simulation preview updated locally · no operational command submitted";
+        window.setTimeout(() => {
+          button.classList.remove("applied");
+          button.textContent =
+            diagramSpecs[
+              diagram.dataset.diagram as Exclude<Workspace, "incident">
+            ].action;
+        }, 1800);
+      });
   });
 }
 
-function startLiveSimulation(root:HTMLElement):()=>void{
-  const map=root.querySelector<HTMLElement>(".map-canvas");
-  map?.insertAdjacentHTML("beforeend",`<div class="sensor-sweep" aria-hidden="true"></div><div class="telemetry-hud"><div><small>STREAM</small><b>WR.TELEMETRY.NORMALIZED</b></div><div><small>TRACKS</small><b id="track-count">104</b></div><div><small>LATENCY</small><b id="latency">42 ms</b></div><div><small>CLOCK</small><b id="clock-quality">± 8 ms</b></div></div><div class="map-feed" aria-live="polite"><span></span><b id="map-event">Telemetry stream synchronized</b></div>`);
-  root.querySelector(".right-rail")?.insertAdjacentHTML("beforeend",`<section class="panel event-stream"><div class="section-heading"><div><span class="kicker">EVENT FABRIC · AT-LEAST-ONCE</span><h2>Live domain events</h2></div><span class="stream-rate" id="stream-rate">24/s</span></div><ol id="event-feed"><li><time>NOW</time><b>TelemetryNormalized</b><span>U-012 · position current</span></li><li><time>-04s</time><b>DeploymentPhaseChanged</b><span>Cohort C · margin verified</span></li><li><time>-09s</time><b>BatteryEligibilityChanged</b><span>BAT-882 · thermal watch</span></li><li><time>-14s</time><b>ForecastPublished</b><span>PP-3.8.1 · advisory only</span></li></ol></section>`);
-  const events=[["TelemetryNormalized","R-017 · quality 0.98"],["IntentAcknowledged","U-012 · accepted"],["FleetCellChanged","Alpha · epoch 2048"],["HazardPictureUpdated","HP-440 · confidence 0.91"],["ChargeSessionChanged","R-028 · 69% SOC"],["DeploymentPhaseChanged","Cohort B · tension balanced"],["StationAvailabilityChanged","Bravo · services current"]] as const;
-  let tick=0;
-  const handle=window.setInterval(()=>{if(document.hidden)return;tick++;const now=new Date();const air=root.querySelector<SVGGElement>(".asset-air");const x=148+(tick%90)*2.15;const y=464-Math.sin(tick/9)*18-(tick%90)*1.55;air?.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)})`);const time=root.querySelector(".utc strong");if(time)time.textContent=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:"UTC"});const updated=root.querySelector(".map-time");if(updated)updated.textContent=`Updated ${tick%3}s ago`;const latency=root.querySelector("#latency");if(latency)latency.textContent=`${38+(tick*7)%19} ms`;const clock=root.querySelector("#clock-quality");if(clock)clock.textContent=`± ${6+(tick%5)} ms`;const rate=root.querySelector("#stream-rate");if(rate)rate.textContent=`${21+(tick*3)%9}/s`;const tension=root.querySelectorAll(".deployment-stats strong")[2];if(tension)tension.textContent=`${(7.8+Math.sin(tick/3)*.45).toFixed(1)} kN`;const wind=root.querySelector(".weather-grid span:first-child b");if(wind)wind.textContent=`${17+(tick%4)} km/h ↗`;const event=events[tick%events.length]!;const feed=root.querySelector("#event-feed");if(feed){const li=document.createElement("li");li.className="new-event";li.innerHTML=`<time>NOW</time><b>${event[0]}</b><span>${event[1]}</span>`;feed.prepend(li);while(feed.children.length>5)feed.lastElementChild?.remove();[...feed.querySelectorAll("time")].slice(1).forEach((el,i)=>{el.textContent=`-${String((i+1)*4).padStart(2,"0")}s`;});}const mapEvent=root.querySelector("#map-event");if(mapEvent)mapEvent.textContent=`${event[0]} · ${event[1]}`;},1400);
-  return ()=>window.clearInterval(handle);
+function startLiveSimulation(root: HTMLElement): () => void {
+  const map = root.querySelector<HTMLElement>(".map-canvas");
+  map?.insertAdjacentHTML(
+    "beforeend",
+    `<div class="sensor-sweep" aria-hidden="true"></div><div class="telemetry-hud"><div><small>STREAM</small><b>WR.TELEMETRY.NORMALIZED</b></div><div><small>TRACKS</small><b id="track-count">104</b></div><div><small>LATENCY</small><b id="latency">42 ms</b></div><div><small>CLOCK</small><b id="clock-quality">± 8 ms</b></div></div><div class="map-feed" aria-live="polite"><span></span><b id="map-event">Telemetry stream synchronized</b></div>`,
+  );
+  root
+    .querySelector(".right-rail")
+    ?.insertAdjacentHTML(
+      "beforeend",
+      `<section class="panel event-stream"><div class="section-heading"><div><span class="kicker">EVENT FABRIC · AT-LEAST-ONCE</span><h2>Live domain events</h2></div><span class="stream-rate" id="stream-rate">24/s</span></div><ol id="event-feed"><li><time>NOW</time><b>TelemetryNormalized</b><span>U-012 · position current</span></li><li><time>-04s</time><b>DeploymentPhaseChanged</b><span>Cohort C · margin verified</span></li><li><time>-09s</time><b>BatteryEligibilityChanged</b><span>BAT-882 · thermal watch</span></li><li><time>-14s</time><b>ForecastPublished</b><span>PP-3.8.1 · advisory only</span></li></ol></section>`,
+    );
+  const events = [
+    ["TelemetryNormalized", "R-017 · quality 0.98"],
+    ["IntentAcknowledged", "U-012 · accepted"],
+    ["FleetCellChanged", "Alpha · epoch 2048"],
+    ["HazardPictureUpdated", "HP-440 · confidence 0.91"],
+    ["ChargeSessionChanged", "R-028 · 69% SOC"],
+    ["DeploymentPhaseChanged", "Cohort B · tension balanced"],
+    ["StationAvailabilityChanged", "Bravo · services current"],
+  ] as const;
+  let tick = 0;
+  const handle = window.setInterval(() => {
+    if (document.hidden) return;
+    tick++;
+    const now = new Date();
+    const air = root.querySelector<SVGGElement>(".asset-air");
+    const x = 148 + (tick % 90) * 2.15;
+    const y = 464 - Math.sin(tick / 9) * 18 - (tick % 90) * 1.55;
+    air?.setAttribute(
+      "transform",
+      `translate(${x.toFixed(1)} ${y.toFixed(1)})`,
+    );
+    const time = root.querySelector(".utc strong");
+    if (time)
+      time.textContent = now.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "UTC",
+      });
+    const updated = root.querySelector(".map-time");
+    if (updated) updated.textContent = `Updated ${tick % 3}s ago`;
+    const latency = root.querySelector("#latency");
+    if (latency) latency.textContent = `${38 + ((tick * 7) % 19)} ms`;
+    const clock = root.querySelector("#clock-quality");
+    if (clock) clock.textContent = `± ${6 + (tick % 5)} ms`;
+    const rate = root.querySelector("#stream-rate");
+    if (rate) rate.textContent = `${21 + ((tick * 3) % 9)}/s`;
+    const tension = root.querySelectorAll(".deployment-stats strong")[2];
+    if (tension)
+      tension.textContent = `${(7.8 + Math.sin(tick / 3) * 0.45).toFixed(1)} kN`;
+    const wind = root.querySelector(".weather-grid span:first-child b");
+    if (wind) wind.textContent = `${17 + (tick % 4)} km/h ↗`;
+    const event = events[tick % events.length]!;
+    const feed = root.querySelector("#event-feed");
+    if (feed) {
+      const li = document.createElement("li");
+      li.className = "new-event";
+      li.innerHTML = `<time>NOW</time><b>${event[0]}</b><span>${event[1]}</span>`;
+      feed.prepend(li);
+      while (feed.children.length > 5) feed.lastElementChild?.remove();
+      [...feed.querySelectorAll("time")].slice(1).forEach((el, i) => {
+        el.textContent = `-${String((i + 1) * 4).padStart(2, "0")}s`;
+      });
+    }
+    const mapEvent = root.querySelector("#map-event");
+    if (mapEvent) mapEvent.textContent = `${event[0]} · ${event[1]}`;
+  }, 1400);
+  return () => window.clearInterval(handle);
 }
 
 export interface OperatorShellHandle {
@@ -118,34 +464,183 @@ export interface OperatorShellHandle {
 }
 
 export function renderOperatorShell(
-  root:HTMLElement,
-  snapshot:OperatorSnapshot,
-  visualizationOptions:{readonly createRenderer?:()=>FrameRenderer}={},
-):OperatorShellHandle {
-  const model=(context:Context)=>snapshot.models.find(item=>item.context===context);
-  const current=snapshot.models.filter(item=>item.state==="current").length;
-  const isDemo=snapshot.tenant==="demo-tenant";
-  root.innerHTML=`<div class="app-shell">
-    <aside class="sidebar"><div class="brand"><span class="brand-mark">W</span><span><b>WILDFIRE</b><small>ROBOTICS COMMAND</small></span></div><nav aria-label="Operational views"><p class="nav-label">15 BOUNDED CONTEXTS</p><div class="workspace-groups">${groupedNavigation()}</div></nav><div class="system-health"><div><span class="live-dot"></span><strong>Transport ${navigator.onLine?"reachable":"offline"}</strong></div><small>Data freshness is reported per workspace</small><div class="health-bar"><i></i></div></div><button class="profile"><span class="avatar">AK</span><span><strong>Alex Kim</strong><small>Incident Operator</small></span><span>•••</span></button></aside>
-    <div class="main-column"><header class="topbar"><div class="incident-title"><span class="severity">LEVEL 2</span><div><h1>Ridge Creek Complex</h1><p>BC-26-0714 · Operational Period 04</p></div></div><div class="top-actions">${isDemo?'<span class="demo-pill">SIMULATED · SEED WR-DEMO-01</span>':""}<button class="icon-button" aria-label="Search">⌕</button><button class="icon-button notifications" aria-label="Notifications">♢<span>3</span></button><div class="utc"><small>UTC</small><strong>${new Date(snapshot.generatedAt).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:"UTC"})}</strong></div></div></header>
-    <main id="workspace" tabindex="-1">${isDemo?'<div class="demo-notice"><span>DETERMINISTIC SOFTWARE DEMO</span> Scenario data exercises implemented domain lifecycles. It is not live telemetry, physical validation, or operational authorization.</div>':""}<div class="status-strip"><article><span class="metric-icon fire-icon">⌁</span><div><small>HAZARD PICTURE</small><strong>Current</strong><span class="trend">HI snapshot · 18s old</span></div></article><article><span class="metric-icon">▲</span><div><small>ELIGIBLE FLEET</small><strong>86 <em>/ 104</em></strong><span class="trend">Fenced epoch 2048</span></div></article><article><span class="metric-icon">◇</span><div><small>MISSION LEASE</small><strong id="lease-status">Active</strong><span class="trend warn" id="lease-detail">14:32 remaining</span></div></article><article><span class="metric-icon shield-icon">✦</span><div><small>CONSTRAINT BUNDLE</small><strong>${current}/${snapshot.models.length}</strong><span class="trend good">Signed · current</span></div></article></div>
-    <div class="workspace-grid"><div class="map-stack">${mapMarkup()}<section class="deployment-card"><div class="section-heading"><div><span class="kicker">AERIAL DEPLOYMENT</span><h2>Fire blanket · Zone Alpha</h2></div><span class="phase-badge">PHASE 06 · TERRAIN ALIGNMENT</span></div><div class="progress-track"><i></i>${["Released","Stabilized","Formation","Expanded","Aligning","Anchoring"].map((v,i)=>`<span class="${i<5?"done":""}"><b>${i<5?"✓":i+1}</b><small>${v}</small></span>`).join("")}</div><div class="deployment-stats"><div><small>COVERAGE</small><strong>12.4 ha</strong></div><div><small>PANELS HEALTHY</small><strong>47 / 48</strong></div><div><small>MAX TENSION</small><strong>8.2 kN</strong></div><div><small>WIND AT 80 M</small><strong>18 km/h</strong></div><button>Open deployment <span>→</span></button></div></section></div>
-    <aside class="right-rail">${isDemo?'<section class="panel demo-controls"><div class="section-heading"><div><span class="kicker">MISSION AUTHORIZATION & DISPATCH</span><h2>Operational demo</h2></div><span id="scenario-step">4 / 7</span></div><div class="workflow" id="workflow"><span class="complete">Incident authority</span><span class="complete">Hazard snapshot</span><span class="complete">Fleet reservation</span><span class="active">Mission dispatched</span><span>Intent acknowledged</span><span>Physical outcome</span><span>Evidence reconciled</span></div><div class="control-grid"><button class="primary-action" id="advance-demo">Advance scenario</button><button id="fault-demo">Inject link loss</button><button id="hold-demo">Hold mission</button></div><p class="control-note" id="control-note">Mission MC-204 is dispatched under lease 8F2A. Awaiting gateway acknowledgement.</p></section>':""}<section class="panel alerts"><div class="section-heading"><div><span class="kicker">EXCEPTIONS & INHIBITS</span><h2>Requires attention</h2></div><button class="text-button">View all</button></div><article class="alert critical"><span>!</span><div><strong>Panel zone automatically degraded</strong><p>AD · A-17 thermal freshness</p><small>Local inhibit active</small></div><button aria-label="Open thermal warning">→</button></article><article class="alert warning"><span>⌁</span><div><strong>Supply route blocked</strong><p>LO · safe reroute pending</p><small>Reservations retained</small></div><button aria-label="Open route warning">→</button></article><article class="alert info"><span>i</span><div><strong>Forecast superseded</strong><p>PP · consumers notified by lineage</p><small>14 min ago</small></div><button aria-label="Open forecast update">→</button></article></section>
+  root: HTMLElement,
+  snapshot: OperatorSnapshot,
+  visualizationOptions: { readonly createRenderer?: () => FrameRenderer } = {},
+): OperatorShellHandle {
+  const model = (context: Context) =>
+    snapshot.models.find((item) => item.context === context);
+  const current = snapshot.models.filter(
+    (item) => item.state === "current",
+  ).length;
+  const isDemo = snapshot.tenant === "demo-tenant";
+  root.innerHTML = `<div class="app-shell">
+    <aside class="sidebar"><div class="brand"><span class="brand-mark">W</span><span><b>WILDFIRE</b><small>ROBOTICS COMMAND</small></span></div><nav aria-label="Operational views"><p class="nav-label">15 BOUNDED CONTEXTS</p><div class="workspace-groups">${groupedNavigation()}</div></nav><div class="system-health"><div><span class="live-dot"></span><strong>Transport ${navigator.onLine ? "reachable" : "offline"}</strong></div><small>Data freshness is reported per workspace</small><div class="health-bar"><i></i></div></div><button class="profile"><span class="avatar">AK</span><span><strong>Alex Kim</strong><small>Incident Operator</small></span><span>•••</span></button></aside>
+    <div class="main-column"><header class="topbar"><div class="incident-title"><span class="severity">LEVEL 2</span><div><h1>Ridge Creek Complex</h1><p>BC-26-0714 · Operational Period 04</p></div></div><div class="top-actions">${isDemo ? '<span class="demo-pill">SIMULATED · SEED WR-DEMO-01</span>' : ""}<button class="icon-button" aria-label="Search">⌕</button><button class="icon-button notifications" aria-label="Notifications">♢<span>3</span></button><div class="utc"><small>UTC</small><strong>${new Date(snapshot.generatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })}</strong></div></div></header>
+    <main id="workspace" tabindex="-1">${isDemo ? '<div class="demo-notice"><span>DETERMINISTIC SOFTWARE DEMO</span> Scenario data exercises implemented domain lifecycles. It is not live telemetry, physical validation, or operational authorization.</div>' : ""}<div class="status-strip"><article><span class="metric-icon fire-icon">⌁</span><div><small>HAZARD PICTURE</small><strong>Current</strong><span class="trend">HI snapshot · 18s old</span></div></article><article><span class="metric-icon">▲</span><div><small>ELIGIBLE FLEET</small><strong>86 <em>/ 104</em></strong><span class="trend">Fenced epoch 2048</span></div></article><article><span class="metric-icon">◇</span><div><small>MISSION LEASE</small><strong id="lease-status">Active</strong><span class="trend warn" id="lease-detail">14:32 remaining</span></div></article><article><span class="metric-icon shield-icon">✦</span><div><small>CONSTRAINT BUNDLE</small><strong>${current}/${snapshot.models.length}</strong><span class="trend good">Signed · current</span></div></article></div>
+    <div class="workspace-grid"><div class="map-stack">${mapMarkup()}<section class="deployment-card"><div class="section-heading"><div><span class="kicker">AERIAL DEPLOYMENT</span><h2>Fire blanket · Zone Alpha</h2></div><span class="phase-badge">PHASE 06 · TERRAIN ALIGNMENT</span></div><div class="progress-track"><i></i>${["Released", "Stabilized", "Formation", "Expanded", "Aligning", "Anchoring"].map((v, i) => `<span class="${i < 5 ? "done" : ""}"><b>${i < 5 ? "✓" : i + 1}</b><small>${v}</small></span>`).join("")}</div><div class="deployment-stats"><div><small>COVERAGE</small><strong>12.4 ha</strong></div><div><small>PANELS HEALTHY</small><strong>47 / 48</strong></div><div><small>MAX TENSION</small><strong>8.2 kN</strong></div><div><small>WIND AT 80 M</small><strong>18 km/h</strong></div><button>Open deployment <span>→</span></button></div></section></div>
+    <aside class="right-rail">${isDemo ? '<section class="panel demo-controls"><div class="section-heading"><div><span class="kicker">MISSION AUTHORIZATION & DISPATCH</span><h2>Operational demo</h2></div><span id="scenario-step">4 / 7</span></div><div class="workflow" id="workflow"><span class="complete">Incident authority</span><span class="complete">Hazard snapshot</span><span class="complete">Fleet reservation</span><span class="active">Mission dispatched</span><span>Intent acknowledged</span><span>Physical outcome</span><span>Evidence reconciled</span></div><div class="control-grid"><button class="primary-action" id="advance-demo">Advance scenario</button><button id="fault-demo">Inject link loss</button><button id="hold-demo">Hold mission</button></div><p class="control-note" id="control-note">Mission MC-204 is dispatched under lease 8F2A. Awaiting gateway acknowledgement.</p></section>' : ""}<section class="panel alerts"><div class="section-heading"><div><span class="kicker">EXCEPTIONS & INHIBITS</span><h2>Requires attention</h2></div><button class="text-button">View all</button></div><article class="alert critical"><span>!</span><div><strong>Panel zone automatically degraded</strong><p>AD · A-17 thermal freshness</p><small>Local inhibit active</small></div><button aria-label="Open thermal warning">→</button></article><article class="alert warning"><span>⌁</span><div><strong>Supply route blocked</strong><p>LO · safe reroute pending</p><small>Reservations retained</small></div><button aria-label="Open route warning">→</button></article><article class="alert info"><span>i</span><div><strong>Forecast superseded</strong><p>PP · consumers notified by lineage</p><small>14 min ago</small></div><button aria-label="Open forecast update">→</button></article></section>
     <section class="panel fleet-panel"><div class="section-heading"><div><span class="kicker">FIELD ASSETS</span><h2>Fleet readiness</h2></div><strong class="fleet-total">86%</strong></div><div class="donut-row"><div class="donut"><span>104<small>TOTAL</small></span></div><div class="fleet-key"><p><i class="ready"></i>Ready <b>76</b></p><p><i class="active"></i>Active <b>18</b></p><p><i class="service"></i>Service <b>7</b></p><p><i class="grounded"></i>Grounded <b>3</b></p></div></div></section>
     <section class="panel weather"><div class="section-heading"><div><span class="kicker">FIELD CONDITIONS</span><h2>Weather window</h2></div><span class="weather-icon">☀</span></div><div class="weather-main"><strong>31°</strong><div><b>Dry & gusting</b><span>Feels like 33°</span></div></div><div class="weather-grid"><span><small>WIND</small><b>18 km/h ↗</b></span><span><small>HUMIDITY</small><b>21%</b></span><span><small>VISIBILITY</small><b>6.4 km</b></span><span><small>FIRE INDEX</small><b class="danger">Extreme</b></span></div></section></aside></div>
-    <section class="context-drawer" aria-label="Detailed operational context">${contexts.map((c,i)=>{const item=model(c);return `<section role="tabpanel" id="panel-${c}" aria-labelledby="tab-${c}" ${i===0?"":"hidden"}><div><span class="kicker">${labels[c].toUpperCase()} READ MODEL</span><h2>${escape(item?.title??labels[c])}</h2><p>${escape(item?.summary??"No authorized read model was returned.")}</p></div><div class="fact-row"><span class="state state-${item?.state??"unknown"}">${stateLabel(item?.state??"unknown")}</span><span><small>UNCERTAINTY</small>${escape(item?.uncertainty??"Unknown")}</span><span><small>AUTHORITATIVE SOURCE</small>${escape(item?.provenance.source??"Unavailable")}</span><span><small>LINEAGE</small><code>${escape(item?.provenance.lineage??"None")}</code></span></div>${item?.limitation?`<aside class="limitation">${escape(item.limitation)}</aside>`:""}</section>`}).join("")}</section>
-    <section class="command-bar"><div><span class="live-dot"></span><strong>Command activity</strong><span>Acceptance, execution, and physical outcome are independently verified.</span></div><ol class="commands">${snapshot.commands.map(c=>`<li><span>${escape(c.stage)}</span><strong>${escape(c.detail)}</strong><time datetime="${escape(c.updatedAt)}">${new Date(c.updatedAt).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</time></li>`).join("")||"<li><strong>No commands in progress</strong></li>"}</ol></section></main></div></div><div class="sr-only" role="status" aria-live="polite" id="announcer"></div>`;
-  root.querySelector(".context-drawer")?.insertAdjacentHTML("beforebegin",domainWorkspaces());
-  root.querySelector(".context-drawer")?.insertAdjacentHTML("beforebegin",additionalWorkspaces());
-  installWorkspaceManagement(root);
-  const tabs=[...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
-  const activate=(next:number,focus=true,updateRoute=true)=>{tabs.forEach((tab,i)=>{const selected=i===next;tab.setAttribute("aria-selected",String(selected));tab.tabIndex=selected?0:-1;const panel=root.querySelector<HTMLElement>(`#${tab.getAttribute("aria-controls")}`);if(panel)panel.hidden=!selected;});const context=workspaces[next]??"incident";const overview=context==="incident";root.querySelectorAll<HTMLElement>(".status-strip,.workspace-grid,.command-bar").forEach(el=>{el.hidden=!overview});root.querySelector<HTMLElement>(".context-drawer")!.hidden=!overview;root.querySelectorAll<HTMLElement>(".domain-view").forEach(el=>{el.hidden=el.id!==`domain-${context}`});if(updateRoute&&location.protocol!=="about:")history.pushState({},"",routeCodec.serialize({workspace:context}));if(focus)tabs[next]?.focus();const live=root.querySelector("#announcer");if(live)live.textContent=`${tabs[next]?.textContent?.trim()??"Unknown"} workspace selected`;};
-  tabs.forEach((tab,index)=>{tab.addEventListener("click",()=>activate(index,false));tab.addEventListener("keydown",event=>{let next=index;if(event.key==="ArrowRight"||event.key==="ArrowDown")next=(index+1)%tabs.length;else if(event.key==="ArrowLeft"||event.key==="ArrowUp")next=(index-1+tabs.length)%tabs.length;else if(event.key==="Home")next=0;else if(event.key==="End")next=tabs.length-1;else return;event.preventDefault();activate(next);});});
-  const restoreRoute=()=>{const route=routeCodec.parse(location.href);const index=workspaces.indexOf(route.workspace);activate(index<0?0:index,false,false);};
-  window.addEventListener("popstate",restoreRoute);
+    <section class="context-drawer" aria-label="Detailed operational context">${contexts
+      .map((c, i) => {
+        const item = model(c);
+        return `<section role="tabpanel" id="panel-${c}" aria-labelledby="tab-${c}" ${i === 0 ? "" : "hidden"}><div><span class="kicker">${labels[c].toUpperCase()} READ MODEL</span><h2>${escape(item?.title ?? labels[c])}</h2><p>${escape(item?.summary ?? "No authorized read model was returned.")}</p></div><div class="fact-row"><span class="state state-${item?.state ?? "unknown"}">${stateLabel(item?.state ?? "unknown")}</span><span><small>UNCERTAINTY</small>${escape(item?.uncertainty ?? "Unknown")}</span><span><small>AUTHORITATIVE SOURCE</small>${escape(item?.provenance.source ?? "Unavailable")}</span><span><small>LINEAGE</small><code>${escape(item?.provenance.lineage ?? "None")}</code></span></div>${item?.limitation ? `<aside class="limitation">${escape(item.limitation)}</aside>` : ""}</section>`;
+      })
+      .join("")}</section>
+    <section class="command-bar"><div><span class="live-dot"></span><strong>Command activity</strong><span>Acceptance, execution, and physical outcome are independently verified.</span></div><ol class="commands">${snapshot.commands.map((c) => `<li><span>${escape(c.stage)}</span><strong>${escape(c.detail)}</strong><time datetime="${escape(c.updatedAt)}">${new Date(c.updatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</time></li>`).join("") || "<li><strong>No commands in progress</strong></li>"}</ol></section></main></div></div><div class="sr-only" role="status" aria-live="polite" id="announcer"></div>`;
+  root
+    .querySelector(".context-drawer")
+    ?.insertAdjacentHTML("beforebegin", domainWorkspaces());
+  root
+    .querySelector(".context-drawer")
+    ?.insertAdjacentHTML("beforebegin", additionalWorkspaces());
+  void mountLiveFireMap(root);
+  mountWorkspaceFireMaps(root);
+  const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+  const activate = (next: number, focus = true, updateRoute = true) => {
+    tabs.forEach((tab, i) => {
+      const selected = i === next;
+      tab.setAttribute("aria-selected", String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      const panel = root.querySelector<HTMLElement>(
+        `#${tab.getAttribute("aria-controls")}`,
+      );
+      if (panel) panel.hidden = !selected;
+    });
+    const context = workspaces[next] ?? "incident";
+    window.dispatchEvent(new CustomEvent("workspacechange",{detail:{workspace:context}}));
+    const overview = context === "incident";
+    root
+      .querySelectorAll<HTMLElement>(
+        ".status-strip,.workspace-grid,.command-bar",
+      )
+      .forEach((el) => {
+        el.hidden = !overview;
+      });
+    root.querySelector<HTMLElement>(".context-drawer")!.hidden = !overview;
+    root.querySelectorAll<HTMLElement>(".domain-view").forEach((el) => {
+      el.hidden = el.id !== `domain-${context}`;
+    });
+    const main=root.querySelector<HTMLElement>(".main-column");
+    if(main)main.dataset.workspace=context;
+    const title=root.querySelector(".incident-title h1");
+    const subtitle=root.querySelector(".incident-title p");
+    const mode=root.querySelector(".incident-title .severity");
+    if(title)title.textContent=workspaceLabels[context];
+    if(subtitle)subtitle.textContent=workspaceSubtitles[context];
+    if(mode)mode.textContent=context==="incident"?"LIVE FIRE":isDemo?"SIMULATED MODEL":"APPLICATION DATA";
+    const active=root.querySelector<HTMLElement>(`#domain-${context}`);
+    if(active){
+      const owning=model(workspaceContext[context]);
+      let banner=active.querySelector<HTMLElement>(".workspace-data-banner");
+      if(!banner){banner=document.createElement("aside");banner.className="workspace-data-banner";active.prepend(banner)}
+      banner.innerHTML=`<span class="state state-${owning?.state??"unknown"}">${stateLabel(owning?.state??"unknown")}</span><div><small>OWNING APPLICATION READ MODEL</small><strong>${escape(owning?.title??`${workspaceLabels[context]} data unavailable`)}</strong><p>${escape(owning?.summary??"The gateway returned no authorized projection for this workspace.")}</p></div><code>${escape(owning?.provenance.lineage??"no-lineage")}</code>`;
+      const supplemental=workspaceSupplement(context);
+      if(supplemental&&!active.querySelector(".workspace-supplement"))banner.insertAdjacentHTML("afterend",`<div class="workspace-supplement">${supplemental}</div>`);
+      if(context==="fleet"){
+        const totals=["2,400,000","2,116,800","43,200","12"];
+        active.querySelectorAll<HTMLElement>(".domain-metrics article>strong").forEach((element,index)=>{element.textContent=totals[index]??element.textContent});
+        const members=active.querySelector<HTMLElement>(".capacity-ring span");if(members)members.innerHTML="230K<small>members</small>";
+      }
+    }
+    if (updateRoute && location.protocol !== "about:")
+      history.pushState({}, "", routeCodec.serialize({ workspace: context }));
+    if (focus) tabs[next]?.focus();
+    const live = root.querySelector("#announcer");
+    if (live)
+      live.textContent = `${tabs[next]?.textContent?.trim() ?? "Unknown"} workspace selected`;
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => activate(index, false));
+    tab.addEventListener("keydown", (event) => {
+      let next = index;
+      if (event.key === "ArrowRight" || event.key === "ArrowDown")
+        next = (index + 1) % tabs.length;
+      else if (event.key === "ArrowLeft" || event.key === "ArrowUp")
+        next = (index - 1 + tabs.length) % tabs.length;
+      else if (event.key === "Home") next = 0;
+      else if (event.key === "End") next = tabs.length - 1;
+      else return;
+      event.preventDefault();
+      activate(next);
+    });
+  });
+  const restoreRoute = () => {
+    const route = routeCodec.parse(location.href);
+    const index = workspaces.indexOf(route.workspace);
+    activate(index < 0 ? 0 : index, false, false);
+  };
+  window.addEventListener("popstate", restoreRoute);
   restoreRoute();
-  const stopSimulation=isDemo?startLiveSimulation(root):()=>undefined;
-  if(isDemo){let step=3;const names=["Incident authority","Hazard snapshot","Fleet reservation","Mission dispatched","Intent acknowledged","Physical outcome","Evidence reconciled"];const notes=["Incident IC-0714 opened; restrictions distributed and acknowledged.","Immutable hazard picture HP-440 frozen with provenance and expiry.","86 eligible vehicles; allocation fenced at fleet-cell epoch 2048.","Mission MC-204 dispatched under lease 8F2A.","Vehicle gateway acknowledged intent; no physical outcome inferred.","Telemetry confirms bounded task outcome inside the authorized ODD.","Custody, audit, evidence, and resource reservations reconciled."];const renderStep=()=>{root.querySelectorAll<HTMLElement>("#workflow span").forEach((el,i)=>{el.className=i<step?"complete":i===step?"active":""});const count=root.querySelector("#scenario-step");if(count)count.textContent=`${step+1} / ${names.length}`;const note=root.querySelector("#control-note");if(note)note.textContent=notes[step]??notes[0]!;};root.querySelector("#advance-demo")?.addEventListener("click",()=>{step=(step+1)%names.length;renderStep();});root.querySelector("#fault-demo")?.addEventListener("click",()=>{const lease=root.querySelector("#lease-status");const detail=root.querySelector("#lease-detail");const note=root.querySelector("#control-note");if(lease)lease.textContent="Minimum risk";if(detail)detail.textContent="Link degraded · intent revoked";if(note)note.textContent="Vehicle Integration reported link loss. Mission Control revoked reachable intent; the vehicle entered its configured minimum-risk condition.";});root.querySelector("#hold-demo")?.addEventListener("click",()=>{const lease=root.querySelector("#lease-status");const detail=root.querySelector("#lease-detail");const note=root.querySelector("#control-note");if(lease)lease.textContent="Held";if(detail)detail.textContent="Operator hold · reservations retained";if(note)note.textContent="Mission held. No new actuator intent can dispatch; current restrictions remain authoritative.";});}
-  const visualization=mountOperatorVisualizationRuntime(root,visualizationOptions);
-  return {visualization,dispose:()=>{stopSimulation();window.removeEventListener("popstate",restoreRoute);visualization.dispose();}};
+  const stopSimulation = isDemo ? startLiveSimulation(root) : () => undefined;
+  if (isDemo) {
+    let step = 3;
+    const names = [
+      "Incident authority",
+      "Hazard snapshot",
+      "Fleet reservation",
+      "Mission dispatched",
+      "Intent acknowledged",
+      "Physical outcome",
+      "Evidence reconciled",
+    ];
+    const notes = [
+      "Incident IC-0714 opened; restrictions distributed and acknowledged.",
+      "Immutable hazard picture HP-440 frozen with provenance and expiry.",
+      "86 eligible vehicles; allocation fenced at fleet-cell epoch 2048.",
+      "Mission MC-204 dispatched under lease 8F2A.",
+      "Vehicle gateway acknowledged intent; no physical outcome inferred.",
+      "Telemetry confirms bounded task outcome inside the authorized ODD.",
+      "Custody, audit, evidence, and resource reservations reconciled.",
+    ];
+    const renderStep = () => {
+      root.querySelectorAll<HTMLElement>("#workflow span").forEach((el, i) => {
+        el.className = i < step ? "complete" : i === step ? "active" : "";
+      });
+      const count = root.querySelector("#scenario-step");
+      if (count) count.textContent = `${step + 1} / ${names.length}`;
+      const note = root.querySelector("#control-note");
+      if (note) note.textContent = notes[step] ?? notes[0]!;
+    };
+    root.querySelector("#advance-demo")?.addEventListener("click", () => {
+      step = (step + 1) % names.length;
+      renderStep();
+    });
+    root.querySelector("#fault-demo")?.addEventListener("click", () => {
+      const lease = root.querySelector("#lease-status");
+      const detail = root.querySelector("#lease-detail");
+      const note = root.querySelector("#control-note");
+      if (lease) lease.textContent = "Minimum risk";
+      if (detail) detail.textContent = "Link degraded · intent revoked";
+      if (note)
+        note.textContent =
+          "Vehicle Integration reported link loss. Mission Control revoked reachable intent; the vehicle entered its configured minimum-risk condition.";
+    });
+    root.querySelector("#hold-demo")?.addEventListener("click", () => {
+      const lease = root.querySelector("#lease-status");
+      const detail = root.querySelector("#lease-detail");
+      const note = root.querySelector("#control-note");
+      if (lease) lease.textContent = "Held";
+      if (detail) detail.textContent = "Operator hold · reservations retained";
+      if (note)
+        note.textContent =
+          "Mission held. No new actuator intent can dispatch; current restrictions remain authoritative.";
+    });
+  }
+  const visualization = mountOperatorVisualizationRuntime(
+    root,
+    visualizationOptions,
+  );
+  root
+    .querySelectorAll<HTMLElement>(".visualization-runtime-host")
+    .forEach((host) => (host.hidden = true));
+  return {
+    visualization,
+    dispose: () => {
+      stopSimulation();
+      window.removeEventListener("popstate", restoreRoute);
+      visualization.dispose();
+    },
+  };
 }

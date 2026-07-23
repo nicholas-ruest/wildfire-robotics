@@ -1,0 +1,9 @@
+.mass-convoy{width:104px!important;background:#161126f2;box-shadow:0 0 14px #b99cff88}
+.swarm-count-marker{display:grid!important;place-items:center;width:82px!important;height:42px!important;border:1px solid #ff906f;border-radius:5px;background:#28140ff0;color:#fff;text-align:center;box-shadow:0 0 18px #ff633f88}
+.swarm-count-marker b,.swarm-count-marker span{display:block}
+.swarm-count-marker b{font:800 15px sans-serif;color:#ff9b7e}
+.swarm-count-marker span{font:700 7px sans-serif;letter-spacing:.08em}
+.swarm-density-field{animation:swarmField 2.2s ease-in-out infinite}
+.mass-legend{min-width:190px}
+.mass-legend>b{color:#ff9b7e}
+@keyframes swarmField{50%{fill-opacity:.2;stroke-opacity:.55}}

@@ -1,0 +1,14 @@
+.lightning-map-bolt{
+  display:grid!important;
+  place-items:center;
+  width:18px!important;
+  height:22px!important;
+  border:1px solid #e4c94b;
+  border-radius:3px;
+  background:#171b12e8;
+  color:#ffe45c;
+  font:700 17px/1 sans-serif;
+  text-shadow:0 0 4px #e4c94b;
+  animation:none!important;
+  transform:none!important;
+}
