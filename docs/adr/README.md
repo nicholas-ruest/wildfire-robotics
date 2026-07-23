@@ -76,6 +76,11 @@
 | [ADR-072](ADR-072-guided-parafoil-tether-and-progressive-deployment-control.md) | Guided parafoil, tether, and progressive deployment control | proposed |
 | [ADR-073](ADR-073-drop-zone-protection-release-authority-and-abort.md) | Drop-zone protection, release authority, and abort | proposed |
 | [ADR-074](ADR-074-blanket-ground-transition-active-containment-and-recovery.md) | Blanket ground transition, active containment, and recovery | proposed |
+| [ADR-075](ADR-075-threejs-operator-workspace-rendering-platform.md) | Three.js operator workspace rendering platform | proposed |
+| [ADR-076](ADR-076-unique-living-scenes-for-all-operator-workspaces.md) | Unique living scenes for all operator workspaces | proposed |
+| [ADR-077](ADR-077-threejs-interaction-performance-accessibility-and-verification.md) | Three.js interaction, performance, accessibility, and verification | proposed |
+| [ADR-078](ADR-078-task-oriented-operator-shell-and-design-system.md) | Task-oriented operator shell and design system | proposed |
+| [ADR-079](ADR-079-resilient-operator-read-model-and-offline-ui-state.md) | Resilient operator read model and offline UI state | proposed |
 
 Numbers are immutable. Superseded decisions remain in the repository and link to their replacements.
 
