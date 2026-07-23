@@ -1,4 +1,12 @@
-import {Object3D, PerspectiveCamera, Scene} from "three";
+import {
+  BoxGeometry,
+  ConeGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  PerspectiveCamera,
+  Scene,
+  SphereGeometry,
+} from "three";
 import type {
   AccessibleSceneDescription,
   ActionReceipt,
@@ -59,12 +67,23 @@ class OwnedWorkspaceScene implements ManagedWorkspaceScene {
     this.state = module.fixture();
     this.viewState = initialState;
     module.entityTypes.forEach((type, index) => {
-      const entity = new Object3D();
+      const geometry = index % 3 === 0
+        ? new SphereGeometry(0.65, 16, 12)
+        : index % 3 === 1
+          ? new BoxGeometry(1.1, 1.1, 1.1)
+          : new ConeGeometry(0.7, 1.4, 12);
+      const material = new MeshBasicMaterial({
+        color: colorFromSignature(module.signature, index),
+        wireframe: index % 2 === 1,
+      });
+      const entity = new Mesh(geometry, material);
       entity.name = `${module.id}:${type}:${index + 1}`;
       entity.userData = {stableId: entity.name, type};
+      entity.position.set((index - 1) * 2.2, (index % 2) * 0.8, -index * 0.5);
       this.threeScene.add(entity);
     });
     this.camera.position.set(0, 8, 12);
+    this.camera.lookAt(0, 0, 0);
   }
 
   mount(host: HTMLElement, services: SceneServices): void {
@@ -132,6 +151,12 @@ class OwnedWorkspaceScene implements ManagedWorkspaceScene {
   }
 
   dispose(): void {
+    this.threeScene.traverse(object => {
+      if (!(object instanceof Mesh)) return;
+      object.geometry.dispose();
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      materials.forEach(material => material.dispose());
+    });
     this.threeScene.clear();
     this.services = null;
   }
@@ -139,4 +164,8 @@ class OwnedWorkspaceScene implements ManagedWorkspaceScene {
 
 function stableSeed(value: string): number {
   return [...value].reduce((seed, character) => (seed * 31 + character.charCodeAt(0)) >>> 0, 17);
+}
+
+function colorFromSignature(signature: string, index: number): number {
+  return (stableSeed(`${signature}:${index}`) & 0x7f7f7f) | 0x404040;
 }

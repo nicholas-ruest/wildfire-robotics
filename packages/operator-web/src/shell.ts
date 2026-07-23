@@ -1,5 +1,10 @@
 import {contexts,type Context,type DataState,type OperatorSnapshot} from "./models";
 import {OperatorRouteCodec,WORKSPACE_GROUPS} from "./ui";
+import {
+  mountOperatorVisualizationRuntime,
+  type FrameRenderer,
+  type OperatorVisualizationRuntime,
+} from "./visualization";
 
 const escape=(value:string)=>value.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]??c));
 const labels:Record<Context,string>={incident:"Incident",mission:"Missions",fleet:"Fleet",station:"Stations",logistics:"Logistics",hazard:"Intelligence",safety:"Safety",recovery:"Recovery"};
@@ -93,21 +98,30 @@ function installWorkspaceManagement(root:HTMLElement):void{
     const nodes=[...diagram.querySelectorAll<SVGElement>(".diagram-node")];const selected=diagram.querySelector<HTMLElement>("[data-selected]");const state=diagram.querySelector<HTMLElement>("[data-state]");
     nodes.forEach((node,index)=>node.addEventListener("click",()=>{nodes.forEach(n=>n.classList.remove("selected"));node.classList.add("selected");if(selected)selected.textContent=node.querySelector(".node-label")?.textContent??`Component ${index+1}`;if(state)state.textContent=`Component ${index+1} selected · controls available`;}));
     const range=diagram.querySelector<HTMLInputElement>('input[type="range"]');const bar=diagram.querySelector<HTMLElement>(".diagram-load i");const syncLoad=()=>{if(bar&&range)bar.style.width=`${range.value}%`;};range?.addEventListener("input",()=>{syncLoad();if(state)state.textContent=`Simulation load set to ${range.value}% · pending apply`;});syncLoad();
-    diagram.querySelector<HTMLButtonElement>("[data-manage]")?.addEventListener("click",event=>{const button=event.currentTarget as HTMLButtonElement;button.classList.add("applied");button.textContent="✓ Applied to simulation";if(state)state.textContent=`Managed change applied · event ${String(Date.now()).slice(-6)}`;window.setTimeout(()=>{button.classList.remove("applied");button.textContent=diagramSpecs[diagram.dataset.diagram as Exclude<Workspace,"incident">].action;},1800);});
+    diagram.querySelector<HTMLButtonElement>("[data-manage]")?.addEventListener("click",event=>{const button=event.currentTarget as HTMLButtonElement;button.classList.add("applied");button.textContent="✓ Preview updated";if(state)state.textContent="Simulation preview updated locally · no operational command submitted";window.setTimeout(()=>{button.classList.remove("applied");button.textContent=diagramSpecs[diagram.dataset.diagram as Exclude<Workspace,"incident">].action;},1800);});
   });
 }
 
-function startLiveSimulation(root:HTMLElement):void{
+function startLiveSimulation(root:HTMLElement):()=>void{
   const map=root.querySelector<HTMLElement>(".map-canvas");
   map?.insertAdjacentHTML("beforeend",`<div class="sensor-sweep" aria-hidden="true"></div><div class="telemetry-hud"><div><small>STREAM</small><b>WR.TELEMETRY.NORMALIZED</b></div><div><small>TRACKS</small><b id="track-count">104</b></div><div><small>LATENCY</small><b id="latency">42 ms</b></div><div><small>CLOCK</small><b id="clock-quality">± 8 ms</b></div></div><div class="map-feed" aria-live="polite"><span></span><b id="map-event">Telemetry stream synchronized</b></div>`);
   root.querySelector(".right-rail")?.insertAdjacentHTML("beforeend",`<section class="panel event-stream"><div class="section-heading"><div><span class="kicker">EVENT FABRIC · AT-LEAST-ONCE</span><h2>Live domain events</h2></div><span class="stream-rate" id="stream-rate">24/s</span></div><ol id="event-feed"><li><time>NOW</time><b>TelemetryNormalized</b><span>U-012 · position current</span></li><li><time>-04s</time><b>DeploymentPhaseChanged</b><span>Cohort C · margin verified</span></li><li><time>-09s</time><b>BatteryEligibilityChanged</b><span>BAT-882 · thermal watch</span></li><li><time>-14s</time><b>ForecastPublished</b><span>PP-3.8.1 · advisory only</span></li></ol></section>`);
-  if(navigator.userAgent.includes("jsdom"))return;
   const events=[["TelemetryNormalized","R-017 · quality 0.98"],["IntentAcknowledged","U-012 · accepted"],["FleetCellChanged","Alpha · epoch 2048"],["HazardPictureUpdated","HP-440 · confidence 0.91"],["ChargeSessionChanged","R-028 · 69% SOC"],["DeploymentPhaseChanged","Cohort B · tension balanced"],["StationAvailabilityChanged","Bravo · services current"]] as const;
   let tick=0;
-  window.setInterval(()=>{tick++;const now=new Date();const air=root.querySelector<SVGGElement>(".asset-air");const x=148+(tick%90)*2.15;const y=464-Math.sin(tick/9)*18-(tick%90)*1.55;air?.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)})`);const time=root.querySelector(".utc strong");if(time)time.textContent=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:"UTC"});const updated=root.querySelector(".map-time");if(updated)updated.textContent=`Updated ${tick%3}s ago`;const latency=root.querySelector("#latency");if(latency)latency.textContent=`${38+(tick*7)%19} ms`;const clock=root.querySelector("#clock-quality");if(clock)clock.textContent=`± ${6+(tick%5)} ms`;const rate=root.querySelector("#stream-rate");if(rate)rate.textContent=`${21+(tick*3)%9}/s`;const tension=root.querySelectorAll(".deployment-stats strong")[2];if(tension)tension.textContent=`${(7.8+Math.sin(tick/3)*.45).toFixed(1)} kN`;const wind=root.querySelector(".weather-grid span:first-child b");if(wind)wind.textContent=`${17+(tick%4)} km/h ↗`;const event=events[tick%events.length]!;const feed=root.querySelector("#event-feed");if(feed){const li=document.createElement("li");li.className="new-event";li.innerHTML=`<time>NOW</time><b>${event[0]}</b><span>${event[1]}</span>`;feed.prepend(li);while(feed.children.length>5)feed.lastElementChild?.remove();[...feed.querySelectorAll("time")].slice(1).forEach((el,i)=>{el.textContent=`-${String((i+1)*4).padStart(2,"0")}s`;});}const mapEvent=root.querySelector("#map-event");if(mapEvent)mapEvent.textContent=`${event[0]} · ${event[1]}`;},1400);
+  const handle=window.setInterval(()=>{if(document.hidden)return;tick++;const now=new Date();const air=root.querySelector<SVGGElement>(".asset-air");const x=148+(tick%90)*2.15;const y=464-Math.sin(tick/9)*18-(tick%90)*1.55;air?.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)})`);const time=root.querySelector(".utc strong");if(time)time.textContent=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:"UTC"});const updated=root.querySelector(".map-time");if(updated)updated.textContent=`Updated ${tick%3}s ago`;const latency=root.querySelector("#latency");if(latency)latency.textContent=`${38+(tick*7)%19} ms`;const clock=root.querySelector("#clock-quality");if(clock)clock.textContent=`± ${6+(tick%5)} ms`;const rate=root.querySelector("#stream-rate");if(rate)rate.textContent=`${21+(tick*3)%9}/s`;const tension=root.querySelectorAll(".deployment-stats strong")[2];if(tension)tension.textContent=`${(7.8+Math.sin(tick/3)*.45).toFixed(1)} kN`;const wind=root.querySelector(".weather-grid span:first-child b");if(wind)wind.textContent=`${17+(tick%4)} km/h ↗`;const event=events[tick%events.length]!;const feed=root.querySelector("#event-feed");if(feed){const li=document.createElement("li");li.className="new-event";li.innerHTML=`<time>NOW</time><b>${event[0]}</b><span>${event[1]}</span>`;feed.prepend(li);while(feed.children.length>5)feed.lastElementChild?.remove();[...feed.querySelectorAll("time")].slice(1).forEach((el,i)=>{el.textContent=`-${String((i+1)*4).padStart(2,"0")}s`;});}const mapEvent=root.querySelector("#map-event");if(mapEvent)mapEvent.textContent=`${event[0]} · ${event[1]}`;},1400);
+  return ()=>window.clearInterval(handle);
 }
 
-export function renderOperatorShell(root:HTMLElement,snapshot:OperatorSnapshot):void {
+export interface OperatorShellHandle {
+  readonly visualization: OperatorVisualizationRuntime;
+  dispose(): void;
+}
+
+export function renderOperatorShell(
+  root:HTMLElement,
+  snapshot:OperatorSnapshot,
+  visualizationOptions:{readonly createRenderer?:()=>FrameRenderer}={},
+):OperatorShellHandle {
   const model=(context:Context)=>snapshot.models.find(item=>item.context===context);
   const current=snapshot.models.filter(item=>item.state==="current").length;
   const isDemo=snapshot.tenant==="demo-tenant";
@@ -130,6 +144,8 @@ export function renderOperatorShell(root:HTMLElement,snapshot:OperatorSnapshot):
   const restoreRoute=()=>{const route=routeCodec.parse(location.href);const index=workspaces.indexOf(route.workspace);activate(index<0?0:index,false,false);};
   window.addEventListener("popstate",restoreRoute);
   restoreRoute();
-  if(isDemo)startLiveSimulation(root);
+  const stopSimulation=isDemo?startLiveSimulation(root):()=>undefined;
   if(isDemo){let step=3;const names=["Incident authority","Hazard snapshot","Fleet reservation","Mission dispatched","Intent acknowledged","Physical outcome","Evidence reconciled"];const notes=["Incident IC-0714 opened; restrictions distributed and acknowledged.","Immutable hazard picture HP-440 frozen with provenance and expiry.","86 eligible vehicles; allocation fenced at fleet-cell epoch 2048.","Mission MC-204 dispatched under lease 8F2A.","Vehicle gateway acknowledged intent; no physical outcome inferred.","Telemetry confirms bounded task outcome inside the authorized ODD.","Custody, audit, evidence, and resource reservations reconciled."];const renderStep=()=>{root.querySelectorAll<HTMLElement>("#workflow span").forEach((el,i)=>{el.className=i<step?"complete":i===step?"active":""});const count=root.querySelector("#scenario-step");if(count)count.textContent=`${step+1} / ${names.length}`;const note=root.querySelector("#control-note");if(note)note.textContent=notes[step]??notes[0]!;};root.querySelector("#advance-demo")?.addEventListener("click",()=>{step=(step+1)%names.length;renderStep();});root.querySelector("#fault-demo")?.addEventListener("click",()=>{const lease=root.querySelector("#lease-status");const detail=root.querySelector("#lease-detail");const note=root.querySelector("#control-note");if(lease)lease.textContent="Minimum risk";if(detail)detail.textContent="Link degraded · intent revoked";if(note)note.textContent="Vehicle Integration reported link loss. Mission Control revoked reachable intent; the vehicle entered its configured minimum-risk condition.";});root.querySelector("#hold-demo")?.addEventListener("click",()=>{const lease=root.querySelector("#lease-status");const detail=root.querySelector("#lease-detail");const note=root.querySelector("#control-note");if(lease)lease.textContent="Held";if(detail)detail.textContent="Operator hold · reservations retained";if(note)note.textContent="Mission held. No new actuator intent can dispatch; current restrictions remain authoritative.";});}
+  const visualization=mountOperatorVisualizationRuntime(root,visualizationOptions);
+  return {visualization,dispose:()=>{stopSimulation();window.removeEventListener("popstate",restoreRoute);visualization.dispose();}};
 }

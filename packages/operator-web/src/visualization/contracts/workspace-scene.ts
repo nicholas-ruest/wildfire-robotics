@@ -43,6 +43,7 @@ export interface ActionGateway {
 }
 
 export interface FrameRenderer {
+  readonly element?: HTMLCanvasElement;
   render(scene: Scene, camera: Camera): void;
   resize(viewport: Viewport): void;
   dispose(): void;

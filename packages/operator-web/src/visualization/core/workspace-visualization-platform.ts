@@ -68,6 +68,9 @@ export class WorkspaceVisualizationPlatform {
       invalidate: () => this.invalidate(),
     };
     scene.mount(this.options.host, services);
+    if (this.options.renderer.element && !this.options.renderer.element.isConnected) {
+      this.options.host.prepend(this.options.renderer.element);
+    }
     scene.setVisibility(this.visible);
     this.invalidate();
   }

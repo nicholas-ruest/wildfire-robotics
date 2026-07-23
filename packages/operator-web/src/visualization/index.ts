@@ -11,5 +11,6 @@ export * from "./fallbacks/semantic-fallback";
 export * from "./interaction/selection-model";
 export * from "./overlays/command-stages";
 export * from "./overlays/entity-controls";
+export * from "./runtime/operator-visualization-runtime";
 export * from "./scenes/catalog";
 export * from "./scenes/types";

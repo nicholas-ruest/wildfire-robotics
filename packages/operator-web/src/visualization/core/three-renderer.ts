@@ -2,10 +2,16 @@ import {WebGLRenderer, type Camera, type Scene} from "three";
 import type {FrameRenderer, Viewport} from "../contracts/workspace-scene";
 
 export class ThreeFrameRenderer implements FrameRenderer {
-  readonly canvas: HTMLCanvasElement;
+  readonly element: HTMLCanvasElement;
+  private readonly renderer: WebGLRenderer;
 
-  constructor(private readonly renderer = new WebGLRenderer({antialias: true, alpha: true})) {
-    this.canvas = renderer.domElement;
+  constructor(renderer?: WebGLRenderer) {
+    if (!renderer && typeof WebGLRenderingContext === "undefined") {
+      throw new Error("WebGL is unavailable");
+    }
+    this.renderer = renderer ?? new WebGLRenderer({antialias: true, alpha: true});
+    this.element = this.renderer.domElement;
+    this.element.className = "workspace-scene-canvas";
   }
 
   render(scene: Scene, camera: Camera): void {
@@ -20,6 +26,6 @@ export class ThreeFrameRenderer implements FrameRenderer {
   dispose(): void {
     this.renderer.dispose();
     this.renderer.forceContextLoss();
-    this.canvas.remove();
+    this.element.remove();
   }
 }
