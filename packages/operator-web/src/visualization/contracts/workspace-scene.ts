@@ -29,6 +29,7 @@ export interface ActionReceipt {
   readonly idempotencyKey: string;
   readonly stage: ActionStage;
   readonly receiptId?: string;
+  readonly physicalOutcome?: "confirmed" | "unknown";
 }
 
 export interface AccessibleSceneDescription {
